@@ -1,0 +1,22 @@
+
+@import "@/styles/variable.scss";
+
+.container {
+  color: $color-white;
+  background-color: $color-green;
+}
+
+.container + .container {
+  margin-top: 20px;
+}
+
+.primary {
+  background-color: $color-purple;
+
+}
+.success {
+  background-color: $color-green;
+}
+.danger {
+  background-color: $color-red;
+}

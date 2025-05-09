@@ -1,0 +1,102 @@
+@import "@/styles/variable.scss";
+
+.create-room-container {
+  width: 100%;
+  max-width: 100%;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  height: 100vh;
+  background-color: #121212;
+  color: #ffffff;
+
+  .room-info {
+    width: 90%;
+    margin: 20px 0 30px 0;
+    padding: 20px 20px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 15px;
+
+    .room-name,
+    .room-type,
+    .limit-container {
+      margin-bottom: 40px;
+    }
+
+    .label-text {
+      font-size: 25px;
+      margin: 10px 0;
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    .room-type {
+      .options-container {
+        height: 68px;
+        background-color: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 12px;
+
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        font-size: 25px;
+
+        .public,
+        .private {
+          flex-basis: 50%;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+        }
+        .selected {
+          width: 100%;
+          height: 100%;
+          background-color: #8c52ff;
+          color: white;
+          font-weight: bold;
+        }
+      }
+    }
+  }
+  .game-type {
+    width: 90%;
+    margin: 20px 0 30px 0;
+    padding: 20px 20px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 15px;
+    display: flex;
+    justify-content: center;
+
+    .game-item {
+      flex: 1;
+      height: 150px;
+      background-color: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 15px;
+      display: flex;
+      justify-content: space-evenly;
+      align-items: center;
+      flex-direction: column;
+
+      .name {
+        font-size: 40px;
+      }
+
+      .desc {
+        font-size: 20px;
+      }
+    }
+
+    .game-type-selected {
+      border: 1px solid $color-purple;
+      background-color: rgba($color-purple, 0.2);
+    }
+    .game-item + .game-item {
+      margin-left: 20px;
+    }
+  }
+}
+
