@@ -1,3 +1,4 @@
+import { postUpdateUserInfo } from "@/services/user";
 import { View, Text, Image, Input } from "@tarojs/components";
 import { useLoad, showToast, navigateTo } from "@tarojs/taro";
 import { useState } from "react";
@@ -11,7 +12,7 @@ export default function Index() {
   const [nickName, setNickName] = useState("");
 
   const { userInfo, updateUserInfo } = useGlobalStore();
-  console.log("userInfo", userInfo);  
+  console.log("userInfo", userInfo);
 
   useLoad(() => {
     // todu
@@ -22,7 +23,7 @@ export default function Index() {
     setAvatarUrl(avatarUrl);
   };
 
-  const handleEnter = () => {
+  const handleEnter = async () => {
     if (!avatarUrl) {
       showToast({
         title: "请上传头像",
@@ -37,14 +38,22 @@ export default function Index() {
       });
       return;
     }
-    updateUserInfo({
-      ...userInfo,
-      avatarUrl,
-      nickName,
-    });
-    navigateTo({
-      url: `/pages/createRoom/index?avatarUrl=${avatarUrl}&nickName=${nickName}`,
-    });
+    try {
+      updateUserInfo({
+        ...userInfo,
+        avatarUrl,
+        nickName,
+      });
+      let res = await postUpdateUserInfo({
+        avatarUrl,
+        nickName,
+      });
+      if (res.code === 0) {
+        navigateTo({
+          url: `/pages/createRoom/index?avatarUrl=${avatarUrl}&nickName=${nickName}`,
+        });
+      }
+    } catch (error) {}
   };
 
   return (

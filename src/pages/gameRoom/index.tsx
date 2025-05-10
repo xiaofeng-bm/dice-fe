@@ -1,16 +1,13 @@
 import { View, Button, Image } from "@tarojs/components";
+import { socketUrl } from "@/services/constant";
 import { useEffect, useRef, useState } from "react";
 import { connectSocket, SocketTask } from "@tarojs/taro";
 import BmDice from "@/components/BmDice";
 import classNames from "classnames";
+import { useGlobalStore } from "@/zustand/index";
 import styles from "./index.module.scss";
 
-import {
-  useLaunch,
-  showShareMenu,
-  useShareAppMessage,
-  getCurrentInstance,
-} from "@tarojs/taro";
+import { useShareAppMessage, getCurrentInstance } from "@tarojs/taro";
 import "@/assets/iconfont/iconfont.css";
 
 const diceEl: any = {
@@ -87,14 +84,8 @@ const diceEl: any = {
 };
 
 const GameRoom = () => {
-  const [players, setPlayers] = useState([
-    {
-      id: 1,
-      name: "张三",
-      avatar: "",
-      points: [],
-    },
-  ]);
+  const { userInfo } = useGlobalStore();
+  const [players, setPlayers] = useState([]);
 
   const dice1Ref = useRef<any>(null);
   const dice2Ref = useRef<any>(null);
@@ -102,24 +93,74 @@ const GameRoom = () => {
 
   const socketTaskRef = useRef<any>();
 
-  useLaunch(() => {});
-
-  useEffect(() => {
-    connect
-
-  }, []);
-
-  const connect = async () => {
-    const socketTask: SocketTask = await connectSocket({
-      url: "ws://localhost:443",
+  // 连接到WebSocket服务器
+  const connectWebSocket = async () => {
+    // 创建WebSocket连接
+    const ws: SocketTask = await connectSocket({
+      url: socketUrl,
       success: () => {
-        console.log("WebSocket连接已打开！");
+        console.log("WebSocket连接已建立");
+      },
+      fail: (error) => {
+        console.error("WebSocket连接失败:", error);
       },
     });
 
-    socketTaskRef.current = socketTask;
-    console.log('socketTask', socketTask)
-  }
+    // 监听WebSocket打开
+    ws.onOpen(() => {
+      console.log("连接上了");
+      socketTaskRef.current = ws;
+      console.dir(userInfo)
+      // 进入页面通知其它用户
+      enter();
+    });
+
+    ws.onMessage((data: any) => {
+      console.log("收到消息", data);
+    });
+    // 监听WebSocket关闭
+    ws.onClose(() => {
+      // 尝试重新连接
+      setTimeout(() => {
+        connectWebSocket();
+      }, 3000);
+    });
+  };
+
+  // 组件挂载时连接WebSocket
+  useEffect(() => {
+    connectWebSocket();
+
+    init();
+    // 组件卸载时关闭连接
+    return () => {
+      if (socketTaskRef.current) {
+        socketTaskRef.current.close();
+      }
+    };
+  }, []);
+
+  const init = () => {};
+
+  const enter = () => {
+    const payload = {
+      event: "joinRoom",
+      data: {
+        roomId: 1,
+        username: userInfo.nickName,
+      },
+    };
+    console.dir(socketTaskRef.current.send);
+    socketTaskRef.current.send({
+      data: JSON.stringify(payload),
+      success: () => {
+        console.log("消息发送成功");
+      },
+      fail: (error) => {
+        console.error("消息发送失败:", error);
+      },
+    });
+  };
 
   useShareAppMessage(() => {
     const params: any = getCurrentInstance().router?.params;
@@ -149,6 +190,7 @@ const GameRoom = () => {
       });
     }, 5100);
   };
+
   return (
     <View className={styles["room-container"]}>
       <View className={styles["dice-bg"]}>

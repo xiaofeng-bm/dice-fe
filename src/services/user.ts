@@ -18,6 +18,23 @@ export const postLogin = (data: { code: string }): Promise<any> => {
   });
 };
 
+// 跟新用户信息
+export const postUpdateUserInfo = (data: any): Promise<any> => {
+  return new Promise((resolve, reject) => {
+    request({
+      url: baseUrl + "/user/update-user-info",
+      method: "POST",
+      data,
+      success: (res) => {
+        resolve(res.data);
+      },
+      fail: (err) => {
+        reject(err);
+      },
+    });
+  });
+}
+
 // 创建房间
 export const postCreateRoom = (data: any): Promise<any> => {
   return new Promise((resolve, reject) => {
