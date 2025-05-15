@@ -126,3 +126,5 @@ export const diceEl: any = {
     </View>
   ),
 };
+
+export const  HEARTBEAT_INTERVAL = 25000; // 心跳间隔 (毫秒)

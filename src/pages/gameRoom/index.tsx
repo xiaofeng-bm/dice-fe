@@ -38,13 +38,14 @@ const GameRoom = () => {
   }, []);
 
   const init = async () => {
-    handleEnterRoom();
+    await handleEnterRoom(userInfo.id, params.roomId!);
+    concateSocket();
   };
-  const handleEnterRoom = async () => {
+  const handleEnterRoom = async (userId: number, roomId: string) => {
     try {
       let res = await postEnterRoom({
-        userId: userInfo.id,
-        roomId: params.roomId,
+        userId: userId,
+        roomId: roomId,
       });
       if (res.code === 0) {
         res.data.players = res.data.players.map((item: any, index: number) => ({
@@ -54,7 +55,6 @@ const GameRoom = () => {
           status: "wait",
         }));
         setRoomInfo(res.data);
-        concateSocket();
       }
     } catch (error) {
       console.error("进入房间失败，请重新尝试", error);
@@ -191,6 +191,9 @@ const GameRoom = () => {
       case "finish":
         finishMessage(message.data);
         break;
+      case "leaveRoom":
+        leaveMessage(message.data);
+        break;
       default:
         break;
     }
@@ -200,13 +203,8 @@ const GameRoom = () => {
     onMessage: handleOnMessage,
   });
 
-  /**
-   * socket心跳检测
-   */
-  const heartBeat = () => {
-    // todu
-  };
   const joinRoomMessage = (data: MessageData) => {
+    handleEnterRoom(data.userId, data.roomId);
     showToast({
       title: `${data.username}加入了房间`,
       icon: "success",
@@ -267,7 +265,7 @@ const GameRoom = () => {
         return {
           ...prevRoomInfo,
           players: prevRoomInfo.players.filter(
-            (item: any) => item.id !== data.content.userId
+            (item: any) => item.id !== data.userId
           ),
         };
       });
@@ -276,10 +274,10 @@ const GameRoom = () => {
         icon: "success",
       });
       let res = await postLeaveRoom({
-        userId: data.content.userId,
-        roomId: params.roomId,
+        userId: data.userId,
+        roomId: data.roomId,
       });
-      if(res.code === 0) {
+      if (res.code === 0) {
         // todu
       }
     } catch (error) {}
