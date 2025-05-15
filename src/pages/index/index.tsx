@@ -1,5 +1,5 @@
 import { postUpdateUserInfo } from "@/services/user";
-import { View, Text, Image, Input } from "@tarojs/components";
+import { View, Text, Image, Input, Button } from "@tarojs/components";
 import { useLoad, showToast, navigateTo } from "@tarojs/taro";
 import { useState } from "react";
 import classNames from "classnames";
@@ -18,9 +18,15 @@ export default function Index() {
     // todu
   });
 
+
+
   const onChooseAvatar = (e: any) => {
     const { avatarUrl } = e.detail;
     setAvatarUrl(avatarUrl);
+  };
+
+  const handleAvatar = (url: string) => {
+    setAvatarUrl(url);
   };
 
   const handleEnter = async () => {
@@ -39,16 +45,17 @@ export default function Index() {
       return;
     }
     try {
-      updateUserInfo({
-        ...userInfo,
-        avatarUrl,
-        nickName,
-      });
       let res = await postUpdateUserInfo({
+        id: userInfo.id,
         avatarUrl,
         nickName,
       });
       if (res.code === 0) {
+        updateUserInfo({
+          ...userInfo,
+          avatarUrl,
+          nickName,
+        });
         navigateTo({
           url: `/pages/createRoom/index?avatarUrl=${avatarUrl}&nickName=${nickName}`,
         });
@@ -79,14 +86,41 @@ export default function Index() {
           <View className={styles["slogan"]}>聚会助手，欢乐无限</View>
         </View>
       </View>
-      <BmButton
+      {/* <BmButton
         className="width-80"
         type="success"
         openType="chooseAvatar"
         onChooseAvatar={onChooseAvatar}
       >
         上传头像
-      </BmButton>
+      </BmButton> */}
+      <View
+        onClick={() =>
+          handleAvatar(
+            "https://baimin.oss-cn-beijing.aliyuncs.com/%E8%83%A1%E6%AD%8C.jpg"
+          )
+        }
+      >
+        选择胡歌
+      </View>
+      <View
+        onClick={() =>
+          handleAvatar(
+            "https://baimin.oss-cn-beijing.aliyuncs.com/a8019f519bebc2fee198eb1e4668b7ee.png"
+          )
+        }
+      >
+        选择大猫
+      </View>
+      <View
+        onClick={() =>
+          handleAvatar(
+            "https://baimin.oss-cn-beijing.aliyuncs.com/08f68a6160c3bd8f96665ad2b96b1632.jpeg"
+          )
+        }
+      >
+        选择哪吒
+      </View>
       <Input
         className={styles["nickname-input"]}
         type="nickname"

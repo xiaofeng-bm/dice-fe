@@ -1,196 +1,290 @@
+import { postEnterRoom, postLeaveRoom } from "@/services/game";
 import { View, Button, Image } from "@tarojs/components";
-import { socketUrl } from "@/services/constant";
-import { useEffect, useRef, useState } from "react";
-import { connectSocket, SocketTask } from "@tarojs/taro";
-import BmDice from "@/components/BmDice";
+
+import { useRouter, showToast } from "@tarojs/taro";
+import { useState, useEffect, useRef, useMemo } from "react";
 import classNames from "classnames";
+
 import { useGlobalStore } from "@/zustand/index";
-import styles from "./index.module.scss";
+import BmButton from "@/components/BmButton";
+import BmDice from "@/components/BmDice";
+import {
+  MessageData,
+  MessageProps,
+  RoomInfo,
+  stateMap,
+  diceEl,
+} from "./config";
 
-import { useShareAppMessage, getCurrentInstance } from "@tarojs/taro";
+// css
 import "@/assets/iconfont/iconfont.css";
-
-const diceEl: any = {
-  1: (
-    <View className={classNames([styles["face"]], styles["face-1"])}>
-      <View className={styles["dots"]}>
-        <View className={styles["dot"]}></View>
-      </View>
-    </View>
-  ),
-  2: (
-    <View className={classNames([styles["face"]], styles["face-2"])}>
-      <View className={styles["dots"]}>
-        <View className={styles["dot"]}></View>
-        <View className={styles["dot"]}></View>
-      </View>
-    </View>
-  ),
-  3: (
-    <View className={classNames([styles["face"]], styles["face-3"])}>
-      <View className={styles["dots"]}>
-        <View className={styles["dot"]}></View>
-        <View className={styles["dot"]}></View>
-        <View className={styles["dot"]}></View>
-      </View>
-    </View>
-  ),
-  4: (
-    <View className={classNames([styles["face"]], styles["face-4"])}>
-      <View className={styles["dots"]}>
-        <View className={styles["column"]}>
-          <View className={styles["dot"]}></View>
-          <View className={styles["dot"]}></View>
-        </View>
-        <View className={styles["column"]}>
-          <View className={styles["dot"]}></View>
-          <View className={styles["dot"]}></View>
-        </View>
-      </View>
-    </View>
-  ),
-  5: (
-    <View className={classNames([styles["face"]], styles["face-5"])}>
-      <View className={styles["dots"]}>
-        <View className={styles["column"]}>
-          <View className={styles["dot"]}></View>
-          <View className={styles["dot"]}></View>
-        </View>
-        <View className={styles["dot"]}></View>
-        <View className={styles["column"]}>
-          <View className={styles["dot"]}></View>
-          <View className={styles["dot"]}></View>
-        </View>
-      </View>
-    </View>
-  ),
-  6: (
-    <View className={classNames([styles["face"]], styles["face-6"])}>
-      <View className={styles["dots"]}>
-        <View className={styles["column"]}>
-          <View className={styles["dot"]}></View>
-          <View className={styles["dot"]}></View>
-          <View className={styles["dot"]}></View>
-        </View>
-
-        <View className={styles["column"]}>
-          <View className={styles["dot"]}></View>
-          <View className={styles["dot"]}></View>
-          <View className={styles["dot"]}></View>
-        </View>
-      </View>
-    </View>
-  ),
-};
+import styles from "./index.module.scss";
+import { useWebSocket } from "./hooks/useWebSocket";
 
 const GameRoom = () => {
   const { userInfo } = useGlobalStore();
-  const [players, setPlayers] = useState([]);
+  const [roomInfo, setRoomInfo] = useState<RoomInfo | null>(null);
+
+  const [btnDisabled, setBtnDisabled] = useState(true);
 
   const dice1Ref = useRef<any>(null);
   const dice2Ref = useRef<any>(null);
-  const [btnDisabled, setBtnDisabled] = useState(false);
 
-  const socketTaskRef = useRef<any>();
+  const { params } = useRouter();
+  console.log("roomInfo", roomInfo);
 
-  // 连接到WebSocket服务器
-  const connectWebSocket = async () => {
-    // 创建WebSocket连接
-    const ws: SocketTask = await connectSocket({
-      url: socketUrl,
-      success: () => {
-        console.log("WebSocket连接已建立");
-      },
-      fail: (error) => {
-        console.error("WebSocket连接失败:", error);
-      },
-    });
-
-    // 监听WebSocket打开
-    ws.onOpen(() => {
-      console.log("连接上了");
-      socketTaskRef.current = ws;
-      console.dir(userInfo)
-      // 进入页面通知其它用户
-      enter();
-    });
-
-    ws.onMessage((data: any) => {
-      console.log("收到消息", data);
-    });
-    // 监听WebSocket关闭
-    ws.onClose(() => {
-      // 尝试重新连接
-      setTimeout(() => {
-        connectWebSocket();
-      }, 3000);
-    });
-  };
-
-  // 组件挂载时连接WebSocket
   useEffect(() => {
-    connectWebSocket();
-
     init();
-    // 组件卸载时关闭连接
-    return () => {
-      if (socketTaskRef.current) {
-        socketTaskRef.current.close();
-      }
-    };
   }, []);
 
-  const init = () => {};
-
-  const enter = () => {
-    const payload = {
-      event: "joinRoom",
-      data: {
-        roomId: 1,
-        username: userInfo.nickName,
-      },
-    };
-    console.dir(socketTaskRef.current.send);
-    socketTaskRef.current.send({
-      data: JSON.stringify(payload),
-      success: () => {
-        console.log("消息发送成功");
-      },
-      fail: (error) => {
-        console.error("消息发送失败:", error);
-      },
-    });
+  const init = async () => {
+    handleEnterRoom();
+  };
+  const handleEnterRoom = async () => {
+    try {
+      let res = await postEnterRoom({
+        userId: userInfo.id,
+        roomId: params.roomId,
+      });
+      if (res.code === 0) {
+        res.data.players = res.data.players.map((item: any, index: number) => ({
+          ...item,
+          points: [],
+          isOwner: index === 0,
+          status: "wait",
+        }));
+        setRoomInfo(res.data);
+        concateSocket();
+      }
+    } catch (error) {
+      console.error("进入房间失败，请重新尝试", error);
+    }
   };
 
-  useShareAppMessage(() => {
-    const params: any = getCurrentInstance().router?.params;
-    return {
-      title: "邀请好友",
-      path: `/pages/index/index?roomId=${params.roomId}&roomName=${params.roomName}`,
-      imageUrl: "",
+  const expandRoomInfo = useMemo(() => {
+    if (roomInfo) {
+      // 房主信息
+      const ownerInfo = roomInfo.players[0];
+      // 房间是否满员
+      const fullHoust = roomInfo.players.length >= roomInfo.playerLimit;
+      // 是否全员已准备
+      const allReady = roomInfo.players
+        .filter((_: any, index: number) => index !== 0)
+        .every((item: any) => item.status === "ready");
+
+      // 是否游戏结束
+      const finished = roomInfo.players.every(
+        (item: any) => item.status === "finished"
+      );
+      // 当前房间玩家信息
+      const curPlayer = roomInfo.players.find(
+        (item: any) => item.id === userInfo.id
+      );
+
+      if (finished) {
+        const winner = roomInfo.players.reduce((prev: any, cur: any) => {
+          if (prev.score > cur.score) {
+            return prev;
+          }
+          return cur;
+        });
+        console.log("winner", winner);
+      }
+      return {
+        ownerInfo,
+        fullHoust,
+        allReady,
+        finished,
+        curPlayer,
+      };
+    }
+  }, [userInfo, roomInfo]);
+
+  const handleStart = async () => {
+    setRoomInfo((prevRoomInfo: any) => {
+      return {
+        ...prevRoomInfo,
+        players: prevRoomInfo.players.map((item: any) => {
+          if (item.id === userInfo.id) {
+            return {
+              ...item,
+              status: "begin",
+            };
+          }
+          return item;
+        }),
+      };
+    });
+
+    const payload = {
+      event: "begin",
+      data: {
+        roomId: params?.roomId,
+      },
     };
-  });
+    sendMessage(payload);
+  };
+
+  const handleReady = async (status: string) => {
+    setRoomInfo((prevRoomInfo: any) => {
+      return {
+        ...prevRoomInfo,
+        players: prevRoomInfo.players.map((item: any) => {
+          if (item.id === userInfo.id) {
+            return {
+              ...item,
+              status: status,
+            };
+          }
+          return item;
+        }),
+      };
+    });
+
+    const payload = {
+      event: "ready",
+      data: {
+        roomId: params?.roomId,
+        userId: userInfo.id,
+        status: status,
+      },
+    };
+    sendMessage(payload);
+  };
 
   const handleRollDice = () => {
     setBtnDisabled(true);
     dice1Ref.current.handleShake();
     dice2Ref.current.handleShake();
     setTimeout(() => {
-      setBtnDisabled(false);
       const dice1 = dice1Ref.current.diceValue;
       const dice2 = dice2Ref.current.diceValue;
 
-      setPlayers((prevPlayers: any) => {
-        return prevPlayers.map((player: any) => {
-          return {
-            ...player,
-            points: [...player.points, dice1, dice2],
-          };
-        });
-      });
+      const points = dice2Ref.current ? [dice1, dice2] : [dice1];
+
+      const payload = {
+        event: "finish",
+        data: {
+          roomId: params.roomId,
+          userId: userInfo.id,
+          points: points,
+          score: points.reduce((acc: number, cur: number) => acc + cur, 0),
+        },
+      };
+      sendMessage(payload);
     }, 5100);
   };
 
+  // ---------------------------------------------- message event ------------------------------------------------
+  const handleOnMessage = (message: MessageProps) => {
+    console.log("message", message);
+    switch (message.data.type) {
+      case "joinRoom":
+        joinRoomMessage(message.data);
+        break;
+      case "ready":
+        readyMessage(message.data);
+        break;
+      case "begin":
+        beginMessage();
+        break;
+      case "finish":
+        finishMessage(message.data);
+        break;
+      default:
+        break;
+    }
+  };
+
+  const { concateSocket, sendMessage } = useWebSocket({
+    onMessage: handleOnMessage,
+  });
+
+  /**
+   * socket心跳检测
+   */
+  const heartBeat = () => {
+    // todu
+  };
+  const joinRoomMessage = (data: MessageData) => {
+    showToast({
+      title: `${data.username}加入了房间`,
+      icon: "success",
+    });
+  };
+  const readyMessage = (data: MessageData) => {
+    setRoomInfo((prevRoomInfo: any) => {
+      return {
+        ...prevRoomInfo,
+        players: prevRoomInfo.players.map((item: any) => {
+          if (item.id === data.content.userId) {
+            return {
+              ...item,
+              status: data.content.status,
+            };
+          }
+          return item;
+        }),
+      };
+    });
+  };
+  const beginMessage = async () => {
+    setRoomInfo((prevRoomInfo: any) => {
+      return {
+        ...prevRoomInfo,
+        players: prevRoomInfo.players.map((item: any) => {
+          return {
+            ...item,
+            status: "begin",
+          };
+        }),
+      };
+    });
+    setBtnDisabled(false);
+  };
+  const finishMessage = async (data: MessageData) => {
+    setRoomInfo((prevRoomInfo: any) => {
+      return {
+        ...prevRoomInfo,
+        players: prevRoomInfo.players.map((item: any) => {
+          if (item.id === data.content.userId) {
+            return {
+              ...item,
+              points: data.content.points,
+              score: data.content.score,
+              status: "finished",
+            };
+          }
+          return item;
+        }),
+      };
+    });
+  };
+
+  const leaveMessage = async (data: MessageData) => {
+    try {
+      setRoomInfo((prevRoomInfo: any) => {
+        return {
+          ...prevRoomInfo,
+          players: prevRoomInfo.players.filter(
+            (item: any) => item.id !== data.content.userId
+          ),
+        };
+      });
+      showToast({
+        title: `${data.username}离开了房间`,
+        icon: "success",
+      });
+      let res = await postLeaveRoom({
+        userId: data.content.userId,
+        roomId: params.roomId,
+      });
+      if(res.code === 0) {
+        // todu
+      }
+    } catch (error) {}
+  };
+  // ---------------------------------------------- message event end ------------------------------------------------
   return (
     <View className={styles["room-container"]}>
       <View className={styles["dice-bg"]}>
@@ -200,44 +294,90 @@ const GameRoom = () => {
         <View className={styles["dice"]}>🎲</View>
       </View>
       <View className={styles["player-container"]}>
-        {players.map((player: any) => {
+        {roomInfo?.players.map((player: any) => {
           return (
             <View className={styles["player-item"]} key={player.id}>
-              <View className={styles["player-name"]}>{player.name}</View>
-              <Image src={player.avatar} className={styles["player-avatar"]} />
+              <View className={styles["player-name"]}>{player.username}</View>
+
+              <View className={styles["player-avatar"]}>
+                <View
+                  className={classNames(styles["status-wrapper"], {
+                    [styles["wait"]]: player.status === "wait",
+                    [styles["ready"]]: player.status === "ready",
+                    [styles["begin"]]: player.status === "begin",
+                    [styles["finished"]]: player.status === "finished",
+                  })}
+                >
+                  {stateMap[player.status]}
+                </View>
+                <Image src={player.headPic} className={styles["avatar"]} />
+              </View>
+
               <View className={styles["point-wrapper"]}>
                 {player.points.map((point: any, index: number) => {
                   return <View key={index}>{diceEl[point]}</View>;
                 })}
+                <View className={styles["dice-score"]}>{player.score}</View>
               </View>
             </View>
           );
         })}
+        {/* {roomInfo?.players.length < roomInfo?.playerLimit && (
+
+        )} */}
         <Button openType="share" className={styles["add-player"]}>
-          <View
-            className={classNames([
-              "iconfont",
-              "icon-add1",
-              styles["add-icon"],
-            ])}
-          ></View>
-          <View className={styles["add-text"]}>邀请</View>
+          <View className={styles["add-player-wrapper"]}>
+            <View
+              className={classNames([
+                "iconfont",
+                "icon-add1",
+                styles["add-icon"],
+              ])}
+            ></View>
+            <View className={styles["add-text"]}>邀请</View>
+          </View>
         </Button>
       </View>
 
       <View className={styles["dice-container"]}>
         <View className={styles["dice-wrapper"]}>
-          <BmDice ref={dice1Ref} />
-          <BmDice ref={dice2Ref} />
+          {roomInfo?.gameType === 1 && <BmDice ref={dice1Ref} />}
+          {roomInfo?.gameType === 2 && (
+            <>
+              <BmDice ref={dice1Ref} />
+              <BmDice ref={dice2Ref} />
+            </>
+          )}
         </View>
-
-        <Button
-          className="button-default"
-          disabled={btnDisabled}
-          onClick={handleRollDice}
-        >
-          摇一下🎲
-        </Button>
+        {expandRoomInfo?.curPlayer?.isOwner && btnDisabled && (
+          <BmButton
+            type="primary"
+            disabled={expandRoomInfo.allReady === false}
+            onClick={handleStart}
+          >
+            开始对局
+          </BmButton>
+        )}
+        {!expandRoomInfo?.curPlayer?.isOwner && btnDisabled && (
+          <BmButton
+            onClick={() => {
+              if (expandRoomInfo?.curPlayer?.status === "ready") {
+                handleReady("wait");
+              } else {
+                handleReady("ready");
+              }
+            }}
+          >
+            {expandRoomInfo?.curPlayer?.status === "ready"
+              ? "取消准备"
+              : "准备"}
+          </BmButton>
+        )}
+        {!btnDisabled && (
+          <BmButton className="button-default" onClick={handleRollDice}>
+            摇一下🎲
+          </BmButton>
+        )}
       </View>
     </View>
   );

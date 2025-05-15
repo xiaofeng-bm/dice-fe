@@ -18,6 +18,23 @@ export const postLogin = (data: { code: string }): Promise<any> => {
   });
 };
 
+export const postH5Login = (data: any): Promise<any> => {
+  return new Promise((resolve, reject) => {
+    request({
+      url: baseUrl + "/user/h5-login",
+      method: "POST",
+      data,
+
+      success: (res) => {
+        resolve(res.data);
+      },
+      fail: (err) => {
+        reject(err);
+      },
+    });
+  });
+};
+
 // 跟新用户信息
 export const postUpdateUserInfo = (data: any): Promise<any> => {
   return new Promise((resolve, reject) => {

@@ -7,6 +7,7 @@
   flex-direction: column;
   align-items: center;
   color: #ffffff;
+  background-color: $color-black;
 
   .player-container {
     display: flex;
@@ -31,8 +32,17 @@
       }
       .player-avatar {
         width: 80px;
-        height: 80px;
         border-radius: 10px;
+
+        .status-wrapper {
+          text-align: center;
+        }
+
+        .avatar {
+          width: 100%;
+          height: 80px;
+          border-radius: 10px;
+        }
       }
 
       .point-wrapper {
@@ -41,19 +51,31 @@
         display: flex;
         justify-content: space-around;
         align-items: center;
+
+        .dice-score {
+          color: $color-green;
+          font-weight: 700;
+        }
       }
     }
 
     .add-player {
       flex-basis: 25%;
-      height: 140px;
-
       background-color: rgba($color-purple, 0.2);
-      
       display: flex;
       justify-content: space-around;
       align-items: center;
       flex-direction: column;
+      color: $color-white;
+
+      .add-player-wrapper {
+        width: 80%;
+        height: 160px;
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        flex-direction: column;
+      }
 
       .add-icon {
         font-size: 40px;
@@ -145,11 +167,11 @@
 }
 
 .face {
-  width: 50px;
-  height: 50px;
+  width: 40px;
+  height: 40px;
   background-color: white;
   border: 1px solid rgba(51, 51, 51, 0.6);
-  border-radius: 10px;
+  border-radius: 8px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -159,8 +181,8 @@
 
   .dot {
     display: inline-block;
-    width: 10px;
-    height: 10px;
+    width: 8px;
+    height: 8px;
     border-radius: 50%;
     background-color: #333;
     margin: 2px;
@@ -180,6 +202,7 @@
   align-self: flex-end;
 }
 .face-3 .dots {
+  height: 100%;
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
@@ -225,4 +248,24 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+}
+
+// status
+.ready {
+  color: $color-yellow;
+  font-size: 16px;
+}
+
+.wait {
+  color: $color-red;
+  font-size: 16px;
+}
+
+.finished {
+  color: $color-green;
+  font-size: 16px;
+}
+.begin {
+  color: $color-purple;
+  font-size: 16px;
 }

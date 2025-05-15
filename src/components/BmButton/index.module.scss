@@ -20,3 +20,10 @@
 .danger {
   background-color: $color-red;
 }
+
+.disabled {
+  background-color: $color-gray;
+  
+  cursor: not-allowed;
+  pointer-events: none;
+}

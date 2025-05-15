@@ -1,10 +1,14 @@
 export default defineAppConfig({
-  pages: ["pages/gameRoom/index", "pages/index/index", "pages/createRoom/index"],
+  pages: [
+    "pages/index/index",
+    "pages/createRoom/index",
+    "pages/gameRoom/index",
+  ],
 
   window: {
     backgroundTextStyle: "light",
     navigationBarBackgroundColor: "#fff",
     navigationBarTitleText: "WeChat",
-    navigationBarTextStyle: "black"
-  }
+    navigationBarTextStyle: "black",
+  },
 });

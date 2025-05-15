@@ -1,40 +1,36 @@
-import { postCreateRoom } from '@/services/user';
+import { postCreateRoom } from "@/services/user";
 import { View, Input, Button } from "@tarojs/components";
 import { useEffect, useState } from "react";
-import { useRouter } from '@tarojs/taro';
+import { navigateTo } from "@tarojs/taro";
 import { AtInputNumber } from "taro-ui";
 import "taro-ui/dist/style/components/input-number.scss";
 import BmButton from "@/components/BmButton";
 import styles from "./index.module.scss";
 import classNames from "classnames";
+import { useGlobalStore } from "@/zustand";
 
 const CreateRoom = () => {
+  const { userInfo } = useGlobalStore();
   const [roomName, setRoomName] = useState("");
   const [roomType, setRoomType] = useState<"public" | "private">("public");
   const [playerLimit, setPlayerLimit] = useState(6);
   const [gameType, setGameType] = useState<number>(1);
-
-  const router = useRouter();
-
-  useEffect(() => {
-    // const {} = router.params;
-    console.log("Router params:", router);
-  }, []);
-
-  const handleCreateRoom = async() => {
+  const handleCreateRoom = async () => {
     try {
       let res = await postCreateRoom({
         roomName,
         roomType,
         playerLimit,
         gameType,
-        openid: ''
+        openid: userInfo.openid,
       });
-      if(res.code === 0) {
-        console.log("创建房间成功", res);
+      if (res.code === 0) {
+        navigateTo({
+          url: `/pages/gameRoom/index?roomId=${res.data.id}`,
+        });
       }
     } catch (error) {
-      
+      console.error("创建房间失败", error);
     }
   };
 
@@ -106,7 +102,7 @@ const CreateRoom = () => {
       </View>
 
       <BmButton
-        style={{ width: '95%' }}
+        style={{ width: "95%" }}
         type="primary"
         onClick={handleCreateRoom}
       >
