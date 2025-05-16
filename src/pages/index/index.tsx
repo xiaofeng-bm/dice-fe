@@ -1,6 +1,6 @@
 import { postUpdateUserInfo } from "@/services/user";
 import { View, Text, Image, Input, Button } from "@tarojs/components";
-import { useLoad, showToast, navigateTo } from "@tarojs/taro";
+import { useLoad, showToast, navigateTo, useRouter } from "@tarojs/taro";
 import { useState } from "react";
 import classNames from "classnames";
 import BmButton from "@/components/BmButton";
@@ -8,6 +8,7 @@ import styles from "./index.module.scss";
 import { useGlobalStore } from "@/zustand/index";
 
 export default function Index() {
+  const { params } = useRouter();
   const [avatarUrl, setAvatarUrl] = useState<string>("");
   const [nickName, setNickName] = useState("");
 
@@ -18,32 +19,13 @@ export default function Index() {
     // todu
   });
 
-
-
   const onChooseAvatar = (e: any) => {
     const { avatarUrl } = e.detail;
     setAvatarUrl(avatarUrl);
   };
 
-  const handleAvatar = (url: string) => {
-    setAvatarUrl(url);
-  };
-
-  const handleEnter = async () => {
-    if (!avatarUrl) {
-      showToast({
-        title: "请上传头像",
-        icon: "none",
-      });
-      return;
-    }
-    if (!nickName) {
-      showToast({
-        title: "请输入昵称",
-        icon: "none",
-      });
-      return;
-    }
+  const handleEnter = async (type: "enterRoom" | "createRoom") => {
+    if (validate()) return;
     try {
       let res = await postUpdateUserInfo({
         id: userInfo.id,
@@ -56,12 +38,38 @@ export default function Index() {
           avatarUrl,
           nickName,
         });
-        navigateTo({
-          url: `/pages/createRoom/index?avatarUrl=${avatarUrl}&nickName=${nickName}`,
-        });
+        if (type === "enterRoom") {
+          navigateTo({
+            url: `/pages/gameRoom/index?roomId=${params?.roomId}`,
+          });
+        } else {
+          navigateTo({
+            url: `/pages/createRoom/index?avatarUrl=${avatarUrl}&nickName=${nickName}`,
+          });
+        }
       }
     } catch (error) {}
   };
+
+  const validate = () => {
+    if (!avatarUrl) {
+      showToast({
+        title: "请上传头像",
+        icon: "none",
+      });
+      return true;
+    }
+    if (!nickName) {
+      showToast({
+        title: "请输入昵称",
+        icon: "none",
+      });
+      return true;
+    }
+    return false;
+  };
+
+  console.log("params", params);
 
   return (
     <View className={styles.container}>
@@ -86,41 +94,14 @@ export default function Index() {
           <View className={styles["slogan"]}>聚会助手，欢乐无限</View>
         </View>
       </View>
-      {/* <BmButton
+      <BmButton
         className="width-80"
         type="success"
         openType="chooseAvatar"
         onChooseAvatar={onChooseAvatar}
       >
         上传头像
-      </BmButton> */}
-      <View
-        onClick={() =>
-          handleAvatar(
-            "https://baimin.oss-cn-beijing.aliyuncs.com/%E8%83%A1%E6%AD%8C.jpg"
-          )
-        }
-      >
-        选择胡歌
-      </View>
-      <View
-        onClick={() =>
-          handleAvatar(
-            "https://baimin.oss-cn-beijing.aliyuncs.com/a8019f519bebc2fee198eb1e4668b7ee.png"
-          )
-        }
-      >
-        选择大猫
-      </View>
-      <View
-        onClick={() =>
-          handleAvatar(
-            "https://baimin.oss-cn-beijing.aliyuncs.com/08f68a6160c3bd8f96665ad2b96b1632.jpeg"
-          )
-        }
-      >
-        选择哪吒
-      </View>
+      </BmButton>
       <Input
         className={styles["nickname-input"]}
         type="nickname"
@@ -131,10 +112,19 @@ export default function Index() {
 
       <BmButton
         className={classNames(["width-80", styles["start-btn"]])}
-        type="primary"
-        onClick={handleEnter}
+        type="success"
+        disabled={params?.roomId === "undefined"}
+        onClick={() => handleEnter("enterRoom")}
       >
-        开始游戏
+        进入房间
+      </BmButton>
+
+      <BmButton
+        className={classNames(["width-80"])}
+        type="primary"
+        onClick={() => handleEnter("createRoom")}
+      >
+        创建房间
       </BmButton>
     </View>
   );

@@ -1,7 +1,7 @@
 {
   "miniprogramRoot": "dist/",
   "projectname": "dice-fe",
-  "description": "休闲聚会小工具",
+  "description": "休闲聚会小工具，包含摇骰子等",
   "appid": "wx179d8bd57b1ca01d",
   "setting": {
     "urlCheck": true,
@@ -9,7 +9,7 @@
     "enhance": false,
     "compileHotReLoad": false,
     "postcss": false,
-    "minified": false,
+    "minified": true,
     "babelSetting": {
       "ignore": [],
       "disablePlugins": [],

@@ -1,7 +1,14 @@
 import { postEnterRoom, postLeaveRoom } from "@/services/game";
 import { View, Button, Image } from "@tarojs/components";
 
-import { useRouter, showToast } from "@tarojs/taro";
+import {
+  useRouter,
+  showToast,
+  useShareAppMessage,
+  useShareTimeline,
+  useDidShow,
+  redirectTo,
+} from "@tarojs/taro";
 import { useState, useEffect, useRef, useMemo } from "react";
 import classNames from "classnames";
 
@@ -31,11 +38,37 @@ const GameRoom = () => {
   const dice2Ref = useRef<any>(null);
 
   const { params } = useRouter();
-  console.log("roomInfo", roomInfo);
 
-  useEffect(() => {
-    init();
-  }, []);
+  // 页面显示时触发（用于判断是否从分享进入）
+  useDidShow(() => {
+    if (params?.roomId && userInfo) {
+      // 存在用户信息，房间信息，直接进入
+      init();
+    } else {
+      // 不存在用户信息，则跳转到登录页
+      showToast({
+        title: "请先登录",
+        icon: "error",
+      });
+      setTimeout(() => {
+        redirectTo({
+          url: "/pages/index/index?roomId=" + params?.roomId,
+        });
+      }, 1000);
+    }
+  });
+
+  useShareAppMessage(() => {
+    // 点击分享触发的回调
+    return {
+      title: `${userInfo.username}邀请你加入房间`,
+      path: "/pages/gameRoom/index?roomId=" + params.roomId,
+    };
+  });
+
+  // useEffect(() => {
+  //   init();
+  // }, []);
 
   const init = async () => {
     await handleEnterRoom(userInfo.id, params.roomId!);
@@ -81,15 +114,15 @@ const GameRoom = () => {
         (item: any) => item.id === userInfo.id
       );
 
-      if (finished) {
-        const winner = roomInfo.players.reduce((prev: any, cur: any) => {
-          if (prev.score > cur.score) {
-            return prev;
-          }
-          return cur;
-        });
-        console.log("winner", winner);
-      }
+      // if (finished) {
+      //   const winner = roomInfo.players.reduce((prev: any, cur: any) => {
+      //     if (prev.score > cur.score) {
+      //       return prev;
+      //     }
+      //     return cur;
+      //   });
+      //   console.log("winner", winner);
+      // }
       return {
         ownerInfo,
         fullHoust,
@@ -175,6 +208,77 @@ const GameRoom = () => {
     }, 5100);
   };
 
+  const btnEle = () => {
+    if (expandRoomInfo) {
+      if (btnDisabled) {
+        if (expandRoomInfo.curPlayer?.isOwner) {
+          if (expandRoomInfo.finished) {
+            return (
+              <BmButton type="primary" onClick={handleAgain}>
+                再来一局
+              </BmButton>
+            );
+          } else {
+            return (
+              <BmButton
+                type="primary"
+                disabled={expandRoomInfo.allReady === false}
+                onClick={handleStart}
+              >
+                开始对局
+              </BmButton>
+            );
+          }
+        } else {
+          return (
+            <BmButton
+              onClick={() => {
+                if (expandRoomInfo.curPlayer?.status === "ready") {
+                  handleReady("wait");
+                } else {
+                  handleReady("ready");
+                }
+              }}
+            >
+              {expandRoomInfo.curPlayer?.status === "ready"
+                ? "取消准备"
+                : "准备"}
+            </BmButton>
+          );
+        }
+      } else {
+        return (
+          <BmButton className="button-default" onClick={handleRollDice}>
+            摇一下🎲
+          </BmButton>
+        );
+      }
+    }
+  };
+
+  const handleAgain = async () => {
+    setRoomInfo((prevRoomInfo: any) => {
+      return {
+        ...prevRoomInfo,
+        players: prevRoomInfo.players.map((item: any) => {
+          return {
+            ...item,
+            points: [],
+            score: null,
+            status: "wait",
+          };
+        }),
+      };
+    });
+    const payload = {
+      event: "gameAgain",
+      data: {
+        roomInfo: roomInfo,
+      },
+    };
+    sendMessage(payload);
+  };
+
   // ---------------------------------------------- message event ------------------------------------------------
   const handleOnMessage = (message: MessageProps) => {
     console.log("message", message);
@@ -193,6 +297,10 @@ const GameRoom = () => {
         break;
       case "leaveRoom":
         leaveMessage(message.data);
+        break;
+      case "gameAgain":
+        console.log("gameGgain", message.data);
+        gameGgaigMessage(message.data);
         break;
       default:
         break;
@@ -282,7 +390,25 @@ const GameRoom = () => {
       }
     } catch (error) {}
   };
+  const gameGgaigMessage = async (data: MessageData) => {
+    console.log("data", data);
+    setRoomInfo((prevRoomInfo: any) => {
+      return {
+        ...prevRoomInfo,
+        players: prevRoomInfo.players.map((item: any, index: number) => {
+          return {
+            ...item,
+            points: [],
+            isOwner: index === 0,
+            score: null,
+            status: "wait",
+          };
+        }),
+      };
+    });
+  };
   // ---------------------------------------------- message event end ------------------------------------------------
+
   return (
     <View className={styles["room-container"]}>
       <View className={styles["dice-bg"]}>
@@ -323,18 +449,20 @@ const GameRoom = () => {
         {/* {roomInfo?.players.length < roomInfo?.playerLimit && (
 
         )} */}
-        <Button openType="share" className={styles["add-player"]}>
-          <View className={styles["add-player-wrapper"]}>
-            <View
-              className={classNames([
-                "iconfont",
-                "icon-add1",
-                styles["add-icon"],
-              ])}
-            ></View>
-            <View className={styles["add-text"]}>邀请</View>
-          </View>
-        </Button>
+        {expandRoomInfo?.fullHoust === false && (
+          <Button openType="share" className={styles["add-player"]}>
+            <View className={styles["add-player-wrapper"]}>
+              <View
+                className={classNames([
+                  "iconfont",
+                  "icon-add1",
+                  styles["add-icon"],
+                ])}
+              ></View>
+              <View className={styles["add-text"]}>邀请</View>
+            </View>
+          </Button>
+        )}
       </View>
 
       <View className={styles["dice-container"]}>
@@ -347,35 +475,7 @@ const GameRoom = () => {
             </>
           )}
         </View>
-        {expandRoomInfo?.curPlayer?.isOwner && btnDisabled && (
-          <BmButton
-            type="primary"
-            disabled={expandRoomInfo.allReady === false}
-            onClick={handleStart}
-          >
-            开始对局
-          </BmButton>
-        )}
-        {!expandRoomInfo?.curPlayer?.isOwner && btnDisabled && (
-          <BmButton
-            onClick={() => {
-              if (expandRoomInfo?.curPlayer?.status === "ready") {
-                handleReady("wait");
-              } else {
-                handleReady("ready");
-              }
-            }}
-          >
-            {expandRoomInfo?.curPlayer?.status === "ready"
-              ? "取消准备"
-              : "准备"}
-          </BmButton>
-        )}
-        {!btnDisabled && (
-          <BmButton className="button-default" onClick={handleRollDice}>
-            摇一下🎲
-          </BmButton>
-        )}
+        {btnEle()}
       </View>
     </View>
   );

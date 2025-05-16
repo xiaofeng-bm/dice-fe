@@ -9,7 +9,11 @@
   align-items: center;
   position: relative;
   height: 100vh;
-  background-color: #121212;
+  background: radial-gradient(
+    circle,
+    rgba(140, 82, 255, 0.2) 0%,
+    rgba(140, 82, 255, 0) 70%
+  );
   color: #ffffff;
 
   .room-info {
@@ -99,4 +103,3 @@
     }
   }
 }
-

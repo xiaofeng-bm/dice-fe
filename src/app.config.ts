@@ -1,8 +1,10 @@
 export default defineAppConfig({
   pages: [
+        "pages/gameRoom/index",
+    "pages/enterRoom/index",
     "pages/index/index",
     "pages/createRoom/index",
-    "pages/gameRoom/index",
+
   ],
 
   window: {
@@ -11,4 +13,5 @@ export default defineAppConfig({
     navigationBarTitleText: "WeChat",
     navigationBarTextStyle: "black",
   },
+  lazyCodeLoading: "requiredComponents",
 });
