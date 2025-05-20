@@ -5,9 +5,6 @@ import {
   useRouter,
   showToast,
   useShareAppMessage,
-  useShareTimeline,
-  useDidShow,
-  redirectTo,
 } from "@tarojs/taro";
 import { useState, useEffect, useRef, useMemo } from "react";
 import classNames from "classnames";
@@ -39,36 +36,17 @@ const GameRoom = () => {
 
   const { params } = useRouter();
 
-  // 页面显示时触发（用于判断是否从分享进入）
-  useDidShow(() => {
-    if (params?.roomId && userInfo) {
-      // 存在用户信息，房间信息，直接进入
-      init();
-    } else {
-      // 不存在用户信息，则跳转到登录页
-      showToast({
-        title: "请先登录",
-        icon: "error",
-      });
-      setTimeout(() => {
-        redirectTo({
-          url: "/pages/index/index?roomId=" + params?.roomId,
-        });
-      }, 1000);
-    }
-  });
-
   useShareAppMessage(() => {
     // 点击分享触发的回调
     return {
       title: `${userInfo.username}邀请你加入房间`,
-      path: "/pages/gameRoom/index?roomId=" + params.roomId,
+      path: `/pages/gameRoom/index?roomId=${roomInfo?.roomId}&from=share`,
     };
   });
 
-  // useEffect(() => {
-  //   init();
-  // }, []);
+  useEffect(() => {
+    init();
+  }, []);
 
   const init = async () => {
     await handleEnterRoom(userInfo.id, params.roomId!);
@@ -78,15 +56,17 @@ const GameRoom = () => {
     try {
       let res = await postEnterRoom({
         userId: userId,
-        roomId: roomId,
+        roomId: Number(roomId),
       });
       if (res.code === 0) {
+        console.log("res", res);
         res.data.players = res.data.players.map((item: any, index: number) => ({
           ...item,
           points: [],
           isOwner: index === 0,
           status: "wait",
         }));
+
         setRoomInfo(res.data);
       }
     } catch (error) {
@@ -186,15 +166,22 @@ const GameRoom = () => {
   };
 
   const handleRollDice = () => {
+    console.log("1111", dice1Ref.current);
     setBtnDisabled(true);
-    dice1Ref.current.handleShake();
-    dice2Ref.current.handleShake();
+    if (dice1Ref.current) {
+      dice1Ref.current.handleShake();
+    }
+    if (dice2Ref.current) {
+      dice2Ref.current.handleShake();
+    }
+
     setTimeout(() => {
-      const dice1 = dice1Ref.current.diceValue;
-      const dice2 = dice2Ref.current.diceValue;
+     
+      const dice1 = dice1Ref.current?.diceValue;
+      const dice2 = dice2Ref.current?.diceValue;
 
       const points = dice2Ref.current ? [dice1, dice2] : [dice1];
-
+      console.log("222");
       const payload = {
         event: "finish",
         data: {
@@ -204,6 +191,7 @@ const GameRoom = () => {
           score: points.reduce((acc: number, cur: number) => acc + cur, 0),
         },
       };
+      console.log("payload", payload);
       sendMessage(payload);
     }, 5100);
   };
@@ -230,6 +218,9 @@ const GameRoom = () => {
             );
           }
         } else {
+          // if() {
+
+          // }
           return (
             <BmButton
               onClick={() => {

@@ -67,10 +67,10 @@
       // flex-basis: 25%;
       background-color: rgba($color-purple, 0.2);
       text-align: center;
-      // display: flex;
-      // justify-content: space-around;
-      // align-items: center;
-      // flex-direction: column;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      flex-direction: column;
       color: $color-white;
 
       .add-player-wrapper {

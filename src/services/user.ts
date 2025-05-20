@@ -2,6 +2,7 @@ import { baseUrl } from "./constant";
 import { request } from "@tarojs/taro";
 
 export const postLogin = (data: { code: string }): Promise<any> => {
+  console.log('baseUrl', baseUrl)
   return new Promise((resolve, reject) => {
     request({
       url: baseUrl + "/user/login",

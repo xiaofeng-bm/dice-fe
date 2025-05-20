@@ -1,5 +1,5 @@
 import { View, Image, Input } from "@tarojs/components";
-import { navigateBack, showToast, navigateTo } from "@tarojs/taro";
+import { navigateBack, showToast, navigateTo, useRouter } from "@tarojs/taro";
 import { useGlobalStore } from "@/zustand";
 
 import { useState } from "react";
@@ -10,7 +10,8 @@ import styles from "./index.module.scss";
 
 const EnterRoom = () => {
   const { userInfo } = useGlobalStore();
-  const [roomId, setRoomId] = useState("");
+  const { params } = useRouter();
+  const [roomId, setRoomId] = useState(params.roomId || "");
 
   const handleEnter = () => {
     if (!roomId) {
@@ -21,7 +22,7 @@ const EnterRoom = () => {
       return;
     }
     navigateTo({
-      url: `/pages/room/index?roomId=${roomId}`,
+      url: `/pages/gameRoom/index?roomId=${roomId}`,
     });
   };
   const goBack = () => {

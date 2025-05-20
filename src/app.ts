@@ -1,8 +1,7 @@
 import { PropsWithChildren, useEffect } from "react";
-import { useLaunch, login, useRouter } from "@tarojs/taro";
+import { useLaunch, login, useRouter, redirectTo } from "@tarojs/taro";
 import { postLogin, postH5Login } from "@/services/user";
-import { useGlobalStore } from "@/zustand/index"
-
+import { useGlobalStore } from "@/zustand/index";
 
 import "./app.scss";
 
@@ -10,15 +9,21 @@ function App({ children }: PropsWithChildren<any>) {
   const { userInfo, updateOpenid, updateUserInfo } = useGlobalStore();
   const router = useRouter();
 
-
-  useLaunch(() => {
+  useLaunch((options) => {
+    const { query } = options;
+    console.log("query", options);
     login({
       success: async ({ code }) => {
         updateOpenid(code);
         let res = await postLogin({ code });
         if (res.code === 0) {
           updateUserInfo(res.data.result);
-          console.log('res', res)
+          if (query?.from === "share" && query?.roomId) {
+            // 分享页进入
+            redirectTo({
+              url: "/pages/gameRoom/index?roomId=" + query?.roomId,
+            });
+          }
         }
       },
     });
@@ -39,7 +44,7 @@ function App({ children }: PropsWithChildren<any>) {
   //       console.log('res', res)
   //     }
   //   } catch (error) {
-      
+
   //   }
   // }
   // children 是将要会渲染的页面

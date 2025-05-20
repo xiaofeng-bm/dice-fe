@@ -15,6 +15,7 @@ export interface Players {
 export interface RoomInfo {
   gameType: number;
   id: number;
+  roomId: number;
   ownerId: number;
   playerLimit: number;
   players: Players[];

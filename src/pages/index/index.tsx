@@ -1,7 +1,7 @@
 import { postUpdateUserInfo } from "@/services/user";
 import { View, Text, Image, Input, Button } from "@tarojs/components";
 import { useLoad, showToast, navigateTo, useRouter } from "@tarojs/taro";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import classNames from "classnames";
 import BmButton from "@/components/BmButton";
 import styles from "./index.module.scss";
@@ -13,11 +13,17 @@ export default function Index() {
   const [nickName, setNickName] = useState("");
 
   const { userInfo, updateUserInfo } = useGlobalStore();
-  console.log("userInfo", userInfo);
 
   useLoad(() => {
     // todu
   });
+
+  useEffect(() => {
+    if(userInfo) {
+      setAvatarUrl(userInfo.headPic);
+      setNickName(userInfo.username);
+    }
+  }, [userInfo])
 
   const onChooseAvatar = (e: any) => {
     const { avatarUrl } = e.detail;
@@ -40,7 +46,7 @@ export default function Index() {
         });
         if (type === "enterRoom") {
           navigateTo({
-            url: `/pages/gameRoom/index?roomId=${params?.roomId}`,
+            url: `/pages/enterRoom/index?roomId=${params?.roomId}`,
           });
         } else {
           navigateTo({
@@ -68,8 +74,6 @@ export default function Index() {
     }
     return false;
   };
-
-  console.log("params", params);
 
   return (
     <View className={styles.container}>
@@ -113,7 +117,7 @@ export default function Index() {
       <BmButton
         className={classNames(["width-80", styles["start-btn"]])}
         type="success"
-        disabled={params?.roomId === "undefined"}
+        // disabled={params?.roomId === "undefined"}
         onClick={() => handleEnter("enterRoom")}
       >
         进入房间

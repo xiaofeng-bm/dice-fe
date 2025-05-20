@@ -26,7 +26,7 @@ const CreateRoom = () => {
       });
       if (res.code === 0) {
         navigateTo({
-          url: `/pages/gameRoom/index?roomId=${res.data.id}`,
+          url: `/pages/gameRoom/index?roomId=${res.data.roomId}`,
         });
       }
     } catch (error) {
