@@ -37,6 +37,7 @@ export const useWebSocket = ({ onMessage }: WebSocketProps) => {
 
     ws.onMessage((data: any) => {
       const message = JSON.parse(data.data);
+      console.log("收到消息:", message);
 
       // 处理心跳响应
       if (message.event === "heartbeat") {

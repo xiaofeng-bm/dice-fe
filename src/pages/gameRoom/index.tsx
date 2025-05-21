@@ -1,17 +1,15 @@
 import { postEnterRoom, postLeaveRoom } from "@/services/game";
+import { postLogin } from "@/services/user";
 import { View, Button, Image } from "@tarojs/components";
 
-import {
-  useRouter,
-  showToast,
-  useShareAppMessage,
-} from "@tarojs/taro";
+import { useRouter, showToast, useShareAppMessage, login } from "@tarojs/taro";
 import { useState, useEffect, useRef, useMemo } from "react";
 import classNames from "classnames";
 
 import { useGlobalStore } from "@/zustand/index";
 import BmButton from "@/components/BmButton";
 import BmDice from "@/components/BmDice";
+import { AtMessage } from 'taro-ui'
 import {
   MessageData,
   MessageProps,
@@ -26,7 +24,7 @@ import styles from "./index.module.scss";
 import { useWebSocket } from "./hooks/useWebSocket";
 
 const GameRoom = () => {
-  const { userInfo } = useGlobalStore();
+  const { userInfo, updateOpenid, updateUserInfo } = useGlobalStore();
   const [roomInfo, setRoomInfo] = useState<RoomInfo | null>(null);
 
   const [btnDisabled, setBtnDisabled] = useState(true);
@@ -40,7 +38,7 @@ const GameRoom = () => {
     // 点击分享触发的回调
     return {
       title: `${userInfo.username}邀请你加入房间`,
-      path: `/pages/gameRoom/index?roomId=${roomInfo?.roomId}&from=share`,
+      path: `/pages/index/index?roomId=${roomInfo?.roomId}&from=share`,
     };
   });
 
@@ -49,8 +47,36 @@ const GameRoom = () => {
   }, []);
 
   const init = async () => {
-    await handleEnterRoom(userInfo.id, params.roomId!);
+    let userData = userInfo;
+    if (!userInfo) {
+      let data = await getUserInfo();
+      userData = data;
+    }
+    console.log('ud', userData.id);
+    await handleEnterRoom(userData?.id, params.roomId!);
     concateSocket();
+  };
+
+  const getUserInfo = async () => {
+    return new Promise((resolve, reject) => {
+      try {
+        login({
+          success: async ({ code }) => {
+            updateOpenid(code);
+            let res = await postLogin({ code });
+            if (res.code === 0) {
+              const userData = res.data.result;
+              updateUserInfo(userData);
+              resolve(userData);
+            } else {
+              reject(new Error("获取用户信息失败"));
+            }
+          },
+        });
+      } catch (error) {
+        reject(error);
+      }
+    });
   };
   const handleEnterRoom = async (userId: number, roomId: string) => {
     try {
@@ -59,7 +85,6 @@ const GameRoom = () => {
         roomId: Number(roomId),
       });
       if (res.code === 0) {
-        console.log("res", res);
         res.data.players = res.data.players.map((item: any, index: number) => ({
           ...item,
           points: [],
@@ -91,7 +116,7 @@ const GameRoom = () => {
       );
       // 当前房间玩家信息
       const curPlayer = roomInfo.players.find(
-        (item: any) => item.id === userInfo.id
+        (item: any) => item.id === userInfo?.id
       );
 
       // if (finished) {
@@ -118,7 +143,7 @@ const GameRoom = () => {
       return {
         ...prevRoomInfo,
         players: prevRoomInfo.players.map((item: any) => {
-          if (item.id === userInfo.id) {
+          if (item.id === userInfo?.id) {
             return {
               ...item,
               status: "begin",
@@ -143,7 +168,7 @@ const GameRoom = () => {
       return {
         ...prevRoomInfo,
         players: prevRoomInfo.players.map((item: any) => {
-          if (item.id === userInfo.id) {
+          if (item.id === userInfo?.id) {
             return {
               ...item,
               status: status,
@@ -158,7 +183,7 @@ const GameRoom = () => {
       event: "ready",
       data: {
         roomId: params?.roomId,
-        userId: userInfo.id,
+        userId: userInfo?.id,
         status: status,
       },
     };
@@ -176,7 +201,6 @@ const GameRoom = () => {
     }
 
     setTimeout(() => {
-     
       const dice1 = dice1Ref.current?.diceValue;
       const dice2 = dice2Ref.current?.diceValue;
 
@@ -186,7 +210,7 @@ const GameRoom = () => {
         event: "finish",
         data: {
           roomId: params.roomId,
-          userId: userInfo.id,
+          userId: userInfo?.id,
           points: points,
           score: points.reduce((acc: number, cur: number) => acc + cur, 0),
         },
@@ -218,24 +242,28 @@ const GameRoom = () => {
             );
           }
         } else {
-          // if() {
-
-          // }
-          return (
-            <BmButton
-              onClick={() => {
-                if (expandRoomInfo.curPlayer?.status === "ready") {
-                  handleReady("wait");
-                } else {
-                  handleReady("ready");
-                }
-              }}
-            >
-              {expandRoomInfo.curPlayer?.status === "ready"
-                ? "取消准备"
-                : "准备"}
-            </BmButton>
-          );
+          console.log("expandRoomInfo.curPlayer", expandRoomInfo.curPlayer);
+          if (
+            expandRoomInfo.curPlayer?.status === "ready" ||
+            expandRoomInfo.curPlayer?.status === "wait"
+          ) {
+            return (
+              <BmButton
+                className="button-default"
+                onClick={() => {
+                  if (expandRoomInfo.curPlayer?.status === "ready") {
+                    handleReady("wait");
+                  } else {
+                    handleReady("ready");
+                  }
+                }}
+              >
+                {expandRoomInfo.curPlayer?.status === "ready"
+                  ? "取消准备"
+                  : "准备"}
+              </BmButton>
+            );
+          }
         }
       } else {
         return (
@@ -402,6 +430,7 @@ const GameRoom = () => {
 
   return (
     <View className={styles["room-container"]}>
+      <AtMessage />
       <View className={styles["dice-bg"]}>
         <View className={styles["dice"]}>🎲</View>
         <View className={styles["dice"]}>🎲</View>

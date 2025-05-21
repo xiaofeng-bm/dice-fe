@@ -1,9 +1,14 @@
 import { postUpdateUserInfo } from "@/services/user";
-import { View, Text, Image, Input, Button } from "@tarojs/components";
+import { View, Image, Input } from "@tarojs/components";
 import { useLoad, showToast, navigateTo, useRouter } from "@tarojs/taro";
+
+
 import { useEffect, useState } from "react";
 import classNames from "classnames";
+
 import BmButton from "@/components/BmButton";
+import { AtMessage } from 'taro-ui'
+
 import styles from "./index.module.scss";
 import { useGlobalStore } from "@/zustand/index";
 
@@ -33,8 +38,9 @@ export default function Index() {
   const handleEnter = async (type: "enterRoom" | "createRoom") => {
     if (validate()) return;
     try {
+      console.log("userInfo", userInfo);
       let res = await postUpdateUserInfo({
-        id: userInfo.id,
+        id: Number(userInfo?.id),
         avatarUrl,
         nickName,
       });
@@ -77,6 +83,7 @@ export default function Index() {
 
   return (
     <View className={styles.container}>
+      <AtMessage />
       <View className={styles["dice-bg"]}>
         <View className={styles["dice"]}>🎲</View>
         <View className={styles["dice"]}>🎲</View>

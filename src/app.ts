@@ -1,7 +1,8 @@
-import { PropsWithChildren, useEffect } from "react";
+import { PropsWithChildren } from "react";
 import { useLaunch, login, useRouter, redirectTo } from "@tarojs/taro";
-import { postLogin, postH5Login } from "@/services/user";
+import { postLogin } from "@/services/user";
 import { useGlobalStore } from "@/zustand/index";
+
 
 import "./app.scss";
 
@@ -11,18 +12,22 @@ function App({ children }: PropsWithChildren<any>) {
 
   useLaunch((options) => {
     const { query } = options;
-    console.log("query", options);
     login({
       success: async ({ code }) => {
         updateOpenid(code);
         let res = await postLogin({ code });
         if (res.code === 0) {
-          updateUserInfo(res.data.result);
+          const userData = res.data.result;
+          console.log("userData", userData);
+          updateUserInfo(userData);
+          console.log("userData", userData);
           if (query?.from === "share" && query?.roomId) {
-            // 分享页进入
-            redirectTo({
-              url: "/pages/gameRoom/index?roomId=" + query?.roomId,
-            });
+            if (userData?.username && userData.headPic) {
+              // 分享页进入，用户信息完整，跳转到游戏房间
+              redirectTo({
+                url: "/pages/gameRoom/index?roomId=" + query?.roomId,
+              });
+            }
           }
         }
       },

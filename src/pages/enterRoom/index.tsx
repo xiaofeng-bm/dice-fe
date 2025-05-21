@@ -1,9 +1,11 @@
+import { postEnterRoom } from "@/services/game";
 import { View, Image, Input } from "@tarojs/components";
 import { navigateBack, showToast, navigateTo, useRouter } from "@tarojs/taro";
 import { useGlobalStore } from "@/zustand";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import BmButton from "@/components/BmButton";
+import { AtMessage } from "taro-ui";
 
 import classNames from "classnames";
 import styles from "./index.module.scss";
@@ -11,9 +13,15 @@ import styles from "./index.module.scss";
 const EnterRoom = () => {
   const { userInfo } = useGlobalStore();
   const { params } = useRouter();
-  const [roomId, setRoomId] = useState(params.roomId || "");
+  const [roomId, setRoomId] = useState("");
 
-  const handleEnter = () => {
+  useEffect(() => {
+    if (params.roomId && params.roomId !== "undefined") {
+      setRoomId(params.roomId as string);
+    }
+  }, []);
+
+  const handleEnter = async () => {
     if (!roomId) {
       showToast({
         title: "请输入房间号",
@@ -21,9 +29,21 @@ const EnterRoom = () => {
       });
       return;
     }
-    navigateTo({
-      url: `/pages/gameRoom/index?roomId=${roomId}`,
-    });
+    try {
+      let res = await postEnterRoom({
+        userId: userInfo?.id,
+        roomId: roomId,
+      });
+      if (res.code === 0) {
+        showToast({
+          title: "进入房间成功",
+          icon: "success",
+        });
+        navigateTo({
+          url: `/pages/gameRoom/index?roomId=${roomId}`,
+        });
+      }
+    } catch (error) {}
   };
   const goBack = () => {
     navigateBack({
@@ -32,6 +52,7 @@ const EnterRoom = () => {
   };
   return (
     <View className={styles["enter-container"]}>
+      <AtMessage />
       <View className={styles["nav-container"]}>
         <View className={styles["back"]} onClick={goBack}>
           返回

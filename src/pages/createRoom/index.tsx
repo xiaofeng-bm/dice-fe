@@ -3,8 +3,10 @@ import { View, Input, Button } from "@tarojs/components";
 import { useEffect, useState } from "react";
 import { navigateTo } from "@tarojs/taro";
 import { AtInputNumber } from "taro-ui";
-import "taro-ui/dist/style/components/input-number.scss";
+
 import BmButton from "@/components/BmButton";
+import { AtMessage } from 'taro-ui'
+
 import styles from "./index.module.scss";
 import classNames from "classnames";
 import { useGlobalStore } from "@/zustand";
@@ -36,6 +38,7 @@ const CreateRoom = () => {
 
   return (
     <View className={styles["create-room-container"]}>
+      <AtMessage />
       <View className={styles["room-info"]}>
         <View className={styles["room-name"]}>
           <View className={styles["label-text"]}>房间名称</View>
