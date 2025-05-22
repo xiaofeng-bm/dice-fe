@@ -19,21 +19,6 @@ function App({ children }: PropsWithChildren<any>) {
           const userData = res.data.result;
           console.log("query", query);
           updateUserInfo(userData);
-          if (query?.from === "share" && query?.roomId) {
-            if (userData?.username && userData.headPic) {
-              if (userData?.username && userData.headPic) {
-                // 分享页进入，用户信息完整，跳转到游戏房间
-                redirectTo({
-                  url: "/pages/gameRoom/index?roomId=" + query?.roomId,
-                });
-              }
-            } else {
-              // 分享页进入，用户信息不完整，跳转到创建房间
-              redirectTo({
-                url: "/pages/index/index?roomId=" + query?.roomId,
-              });
-            }
-          }
         }
       },
     });

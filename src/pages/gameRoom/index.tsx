@@ -2,14 +2,21 @@ import { postEnterRoom, postLeaveRoom } from "@/services/game";
 import { postLogin } from "@/services/user";
 import { View, Button, Image } from "@tarojs/components";
 
-import { useRouter, showToast, useShareAppMessage, login, setNavigationBarTitle } from "@tarojs/taro";
+import {
+  useRouter,
+  showToast,
+  useShareAppMessage,
+  login,
+  setNavigationBarTitle,
+  navigateTo,
+} from "@tarojs/taro";
 import { useState, useEffect, useRef, useMemo } from "react";
 import classNames from "classnames";
 
 import { useGlobalStore } from "@/zustand/index";
 import BmButton from "@/components/BmButton";
 import BmDice from "@/components/BmDice";
-import { AtMessage } from 'taro-ui'
+import { AtMessage } from "taro-ui";
 import {
   MessageData,
   MessageProps,
@@ -24,10 +31,12 @@ import styles from "./index.module.scss";
 import { useWebSocket } from "./hooks/useWebSocket";
 
 const GameRoom = () => {
-  const { userInfo, updateOpenid, updateUserInfo } = useGlobalStore();
+  const { updateOpenid, updateUserInfo } = useGlobalStore();
   const [roomInfo, setRoomInfo] = useState<RoomInfo | null>(null);
 
   const [btnDisabled, setBtnDisabled] = useState(true);
+
+  const [userInfo, setUserInfo] = useState<any>(null);
 
   const dice1Ref = useRef<any>(null);
   const dice2Ref = useRef<any>(null);
@@ -35,30 +44,26 @@ const GameRoom = () => {
   const { params } = useRouter();
 
   useShareAppMessage(() => {
-    console.log('触发分享')
+    console.log("触发分享");
     // 点击分享触发的回调
     return {
-      title: `${userInfo.username}邀请你加入房间`,
-      path: `/pages/index/index?roomId=${roomInfo?.roomId}&from=share`,
+      title: `${userInfo?.username}邀请你加入房间`,
+      path: `/pages/gameRoom/index?roomId=${roomInfo?.roomId}&from=share`,
     };
   });
 
   useEffect(() => {
     init();
     setNavigationBarTitle({
-      title: `[${params.roomId}]号房间`
-    })
+      title: `[${params.roomId}]号房间`,
+    });
   }, []);
 
   const init = async () => {
-    let userData = userInfo;
-    if (!userInfo) {
-      let data = await getUserInfo();
-      userData = data;
-    }
-    console.log('ud', userData.id);
+    const userData: any = await getUserInfo();
+    console.log("game room userData", userData);
     await handleEnterRoom(userData?.id, params.roomId!);
-    concateSocket();
+    concateSocket(userData);
   };
 
   const getUserInfo = async () => {
@@ -71,7 +76,14 @@ const GameRoom = () => {
             if (res.code === 0) {
               const userData = res.data.result;
               updateUserInfo(userData);
-              resolve(userData);
+              if (userData.username && userData.headPic) {
+                setUserInfo(userData);
+                resolve(userData);
+              } else {
+                navigateTo({
+                  url: `/pages/index/index?roomId=${params?.roomId}&from=gameRoom`,
+                });
+              }
             } else {
               reject(new Error("获取用户信息失败"));
             }

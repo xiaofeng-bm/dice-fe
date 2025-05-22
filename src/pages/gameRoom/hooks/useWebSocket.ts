@@ -11,11 +11,13 @@ const HEARTBEAT_INTERVAL = 10000 // 28秒心跳间隔
 export const useWebSocket = ({ onMessage }: WebSocketProps) => {
   const { params } = useRouter();
   const socketTaskRef = useRef<any>();
-  const { userInfo } = useGlobalStore();
+  
+  const userInfo = useRef<any>(null);
 
   const heartbeatInterval = useRef<any>(null);
 
-  const concateSocket = async () => {
+  const concateSocket = async (userData: any) => {
+    userInfo.current = userData;
     // 创建WebSocket连接
     const ws: SocketTask = await connectSocket({
       url: socketUrl,
@@ -73,8 +75,8 @@ export const useWebSocket = ({ onMessage }: WebSocketProps) => {
       event: "joinRoom",
       data: {
         roomId: params.roomId,
-        username: userInfo.username,
-        userId: userInfo.id,
+        username: userInfo.current?.username,
+        userId: userInfo.current?.id,
       },
     };
     socketTaskRef.current.send({
@@ -98,7 +100,7 @@ export const useWebSocket = ({ onMessage }: WebSocketProps) => {
         event: "heartbeat",
         data: {
           roomId: params.roomId,
-          userId: userInfo.id,
+          userId: userInfo.current?.id,
         },
       };
       sendMessage(payload);
