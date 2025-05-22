@@ -3,7 +3,6 @@ import { useLaunch, login, useRouter, redirectTo } from "@tarojs/taro";
 import { postLogin } from "@/services/user";
 import { useGlobalStore } from "@/zustand/index";
 
-
 import "./app.scss";
 
 function App({ children }: PropsWithChildren<any>) {
@@ -18,14 +17,20 @@ function App({ children }: PropsWithChildren<any>) {
         let res = await postLogin({ code });
         if (res.code === 0) {
           const userData = res.data.result;
-          console.log("userData", userData);
+          console.log("query", query);
           updateUserInfo(userData);
-          console.log("userData", userData);
           if (query?.from === "share" && query?.roomId) {
             if (userData?.username && userData.headPic) {
-              // 分享页进入，用户信息完整，跳转到游戏房间
+              if (userData?.username && userData.headPic) {
+                // 分享页进入，用户信息完整，跳转到游戏房间
+                redirectTo({
+                  url: "/pages/gameRoom/index?roomId=" + query?.roomId,
+                });
+              }
+            } else {
+              // 分享页进入，用户信息不完整，跳转到创建房间
               redirectTo({
-                url: "/pages/gameRoom/index?roomId=" + query?.roomId,
+                url: "/pages/index/index?roomId=" + query?.roomId,
               });
             }
           }

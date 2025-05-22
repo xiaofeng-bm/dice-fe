@@ -2,7 +2,7 @@ import { postEnterRoom, postLeaveRoom } from "@/services/game";
 import { postLogin } from "@/services/user";
 import { View, Button, Image } from "@tarojs/components";
 
-import { useRouter, showToast, useShareAppMessage, login } from "@tarojs/taro";
+import { useRouter, showToast, useShareAppMessage, login, setNavigationBarTitle } from "@tarojs/taro";
 import { useState, useEffect, useRef, useMemo } from "react";
 import classNames from "classnames";
 
@@ -35,6 +35,7 @@ const GameRoom = () => {
   const { params } = useRouter();
 
   useShareAppMessage(() => {
+    console.log('触发分享')
     // 点击分享触发的回调
     return {
       title: `${userInfo.username}邀请你加入房间`,
@@ -44,6 +45,9 @@ const GameRoom = () => {
 
   useEffect(() => {
     init();
+    setNavigationBarTitle({
+      title: `[${params.roomId}]号房间`
+    })
   }, []);
 
   const init = async () => {
