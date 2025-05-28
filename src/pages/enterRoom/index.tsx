@@ -5,21 +5,50 @@ import { useGlobalStore } from "@/zustand";
 
 import { useEffect, useState } from "react";
 import BmButton from "@/components/BmButton";
+import BmSpin from "@/components/BmSpin";
 import { AtMessage } from "taro-ui";
 
 import classNames from "classnames";
 import styles from "./index.module.scss";
+import { getHotRooms } from "@/services/room";
 
 const EnterRoom = () => {
   const { userInfo } = useGlobalStore();
   const { params } = useRouter();
   const [roomId, setRoomId] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const [hotRooms, setHotRooms] = useState<any[]>([]);
 
   useEffect(() => {
     if (params.roomId && params.roomId !== "undefined") {
       setRoomId(params.roomId as string);
     }
+    init();
   }, []);
+
+  const init = () => {
+    getHotRoomList();
+  };
+
+  const getHotRoomList = async () => {
+    setLoading(true);
+    try {
+      let res = await getHotRooms({
+        roomType: "public",
+      });
+      if (res.code === 0) {
+        setHotRooms(res.data);
+      }
+    } catch (error) {
+      console.error("获取热门房间列表失败", error);
+    } finally {
+      // 模拟加载延迟，方便测试加载动画效果
+      setTimeout(() => {
+        setLoading(false);
+      }, 1000);
+    }
+  };
 
   const handleEnter = async () => {
     if (!roomId) {
@@ -53,6 +82,7 @@ const EnterRoom = () => {
   return (
     <View className={styles["enter-container"]}>
       <AtMessage />
+
       <View className={styles["nav-container"]}>
         <View className={styles["back"]} onClick={goBack}>
           返回
@@ -84,6 +114,10 @@ const EnterRoom = () => {
             </BmButton>
           </View>
         </View>
+      </View>
+
+      <View className={styles["hot-rooms"]}>
+        <View className={styles[""]}></View>
       </View>
     </View>
   );

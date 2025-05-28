@@ -1,7 +1,7 @@
 import { View } from "@tarojs/components";
 import styles from "./index.module.scss";
 import classNames from "classnames";
-import { useRef, useState, useImperativeHandle, forwardRef } from "react";
+import { useRef, useState, useImperativeHandle, forwardRef, useEffect } from "react";
 
 const rotations = [
   { x: 0, y: 0, z: 0 }, // 1点朝前
@@ -15,15 +15,39 @@ const rotations = [
 const BmDice = forwardRef((props: any, ref: any) => {
   const diceRef = useRef<HTMLDivElement>(null);
   const [diceValue, setDiceValue] = useState<number | null>(null);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // 添加组件卸载时的清理
+  useEffect(() => {
+    return () => {
+      // 清除计时器，防止组件卸载后继续执行
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+  }, []);
 
   useImperativeHandle(ref, () => {
     return {
       handleShake,
-      diceValue
+      diceValue,
+      resetDice
     }
   })
 
+  // 新增重置函数，用于清除计时器
+  const resetDice = () => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+  }
+
   const handleShake = () => {
+    // 清除之前的计时器
+    resetDice();
+    
     if (diceRef.current) {
       setDiceValue(null);
       diceRef.current.style.transition = "none";
@@ -38,20 +62,22 @@ const BmDice = forwardRef((props: any, ref: any) => {
 
       // 重新启用动画并设置新的transform
       requestAnimationFrame(() => {
-        diceRef.current!.style.transition =
-          "transform 5s cubic-bezier(0.2, 0.1, 0.3, 1)";
+        if (diceRef.current) {
+          diceRef.current.style.transition =
+            "transform 5s cubic-bezier(0.2, 0.1, 0.3, 1)";
 
-        // 在动画过程中添加额外旋转，但最终停在正确的角度
-        const spins = 1080; // 3圈
-        diceRef.current!.style.transform = `rotateX(${
-          finalRotation1.x + spins
-        }deg) rotateY(${finalRotation1.y + spins}deg) rotateZ(0deg)`;
+          // 在动画过程中添加额外旋转，但最终停在正确的角度
+          const spins = 1080; // 3圈
+          diceRef.current.style.transform = `rotateX(${
+            finalRotation1.x + spins
+          }deg) rotateY(${finalRotation1.y + spins}deg) rotateZ(0deg)`;
+        }
       });
 
       // 动画结束后显示点数
-      setTimeout(() => {
-      
+      timerRef.current = setTimeout(() => {
         setDiceValue(dice1Value + 1);
+        timerRef.current = null;
       }, 5000);
     }
   };

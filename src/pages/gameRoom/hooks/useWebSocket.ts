@@ -1,13 +1,13 @@
 import { connectSocket, SocketTask, useRouter } from "@tarojs/taro";
 import { useRef } from "react";
-import { useGlobalStore } from "@/zustand/index";
-import { socketUrl } from "@/services/constant";
 import { MessageProps, PayloadProps } from "../config";
 
 interface WebSocketProps {
   onMessage: (message: MessageProps) => void;
 }
 const HEARTBEAT_INTERVAL = 10000 // 28秒心跳间隔
+
+const socketUrl = process.env.TARO_APP_SOCKETURL || "wss://slyai.top/ws";
 export const useWebSocket = ({ onMessage }: WebSocketProps) => {
   const { params } = useRouter();
   const socketTaskRef = useRef<any>();

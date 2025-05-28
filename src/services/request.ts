@@ -11,7 +11,7 @@ export const request = ({ url, method, data, success, fail }: any) => {
       } else {
         atMessage({
           "message": data.data || data.msg,
-          "type": 'error'
+          "type": 'warning'
         })
       }
     },

@@ -9,6 +9,9 @@ import {
   login,
   setNavigationBarTitle,
   navigateTo,
+  useUnload,
+  useDidShow,
+  useDidHide,
 } from "@tarojs/taro";
 import { useState, useEffect, useRef, useMemo } from "react";
 import classNames from "classnames";
@@ -52,16 +55,43 @@ const GameRoom = () => {
     };
   });
 
-  useEffect(() => {
+  const unMount = () => {
+    console.log("unMount");
+    if (gameTimerRef.current) {
+      clearTimeout(gameTimerRef.current);
+      gameTimerRef.current = null;
+    }
+    if (dice1Ref.current?.resetDice) {
+      dice1Ref.current.resetDice();
+    }
+    if (dice2Ref.current?.resetDice) {
+      dice2Ref.current.resetDice();
+    }
+
+    // 发送离开房间的消息
+    const payload = {
+      event: "leaveRoom",
+      data: {
+        roomId: params?.roomId,
+        userId: userInfo?.id,
+        username: userInfo?.username,
+      },
+    };
+    sendMessage(payload);
+  };
+
+  useDidShow(() => {
     init();
     setNavigationBarTitle({
       title: `[${params.roomId}]号房间`,
     });
-  }, []);
+  });
+
+  useUnload(unMount);
+  useDidHide(unMount);
 
   const init = async () => {
     const userData: any = await getUserInfo();
-    console.log("game room userData", userData);
     await handleEnterRoom(userData?.id, params.roomId!);
     concateSocket(userData);
   };
@@ -206,22 +236,33 @@ const GameRoom = () => {
     sendMessage(payload);
   };
 
+  // 用于存储游戏计时器的引用
+  const gameTimerRef = useRef<NodeJS.Timeout | null>(null);
+
   const handleRollDice = () => {
-    console.log("1111", dice1Ref.current);
+    // 清除可能存在的先前计时器
+    if (gameTimerRef.current) {
+      clearTimeout(gameTimerRef.current);
+      gameTimerRef.current = null;
+    }
+
     setBtnDisabled(true);
+    // 重置并摇动骰子
     if (dice1Ref.current) {
+      dice1Ref.current.resetDice?.(); // 调用新增的重置函数
       dice1Ref.current.handleShake();
     }
     if (dice2Ref.current) {
+      dice2Ref.current.resetDice?.(); // 调用新增的重置函数
       dice2Ref.current.handleShake();
     }
 
-    setTimeout(() => {
+    // 设置新的计时器并存储引用
+    gameTimerRef.current = setTimeout(() => {
       const dice1 = dice1Ref.current?.diceValue;
       const dice2 = dice2Ref.current?.diceValue;
 
       const points = dice2Ref.current ? [dice1, dice2] : [dice1];
-      console.log("222");
       const payload = {
         event: "finish",
         data: {
@@ -231,8 +272,8 @@ const GameRoom = () => {
           score: points.reduce((acc: number, cur: number) => acc + cur, 0),
         },
       };
-      console.log("payload", payload);
       sendMessage(payload);
+      gameTimerRef.current = null;
     }, 5100);
   };
 
@@ -482,9 +523,6 @@ const GameRoom = () => {
             </View>
           );
         })}
-        {/* {roomInfo?.players.length < roomInfo?.playerLimit && (
-
-        )} */}
         {expandRoomInfo?.fullHoust === false && (
           <Button openType="share" className={styles["add-player"]}>
             <View className={styles["add-player-wrapper"]}>

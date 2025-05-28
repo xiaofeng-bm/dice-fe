@@ -1,7 +1,7 @@
-import { baseUrl } from "./constant";
-// import { request } from "@tarojs/taro";
+
 import { request } from "./request";
 
+const baseUrl = process.env.TARO_APP_BASEURL;
 export const getRoomInfo = (data: any): Promise<any> => {
   return new Promise((resolve, reject) => {
     request({

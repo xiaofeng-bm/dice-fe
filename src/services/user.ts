@@ -1,6 +1,8 @@
-import { baseUrl } from "./constant";
-// import { request } from "@tarojs/taro";
+
+import { uploadFile } from "@tarojs/taro";
 import { request } from "./request";
+
+const baseUrl = process.env.TARO_APP_BASEURL;
 
 export const postLogin = (data: { code: string }): Promise<any> => {
   console.log("baseUrl", baseUrl);
@@ -79,6 +81,25 @@ export const getRoom = (data: any): Promise<any> => {
       data,
       success: (data) => {
         resolve(data);
+      },
+      fail: (err) => {
+        reject(err);
+      },
+    });
+  });
+};
+
+export const postUploadFile = (data: any): Promise<any> => {
+  return new Promise((resolve, reject) => {
+    uploadFile({
+      url: baseUrl + "/oss/upload-file",
+      filePath: data.filePath,
+      name: 'file',
+      header: {
+        "Content-Type": "multipart/form-data",
+      },
+      success: (res) => {
+        resolve(JSON.parse(res.data));
       },
       fail: (err) => {
         reject(err);

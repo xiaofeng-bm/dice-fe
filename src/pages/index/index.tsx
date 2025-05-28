@@ -1,13 +1,12 @@
-import { postUpdateUserInfo } from "@/services/user";
+import { postUpdateUserInfo, postUploadFile } from "@/services/user";
 import { View, Image, Input } from "@tarojs/components";
 import { useLoad, showToast, navigateTo, useRouter } from "@tarojs/taro";
-
 
 import { useEffect, useState } from "react";
 import classNames from "classnames";
 
 import BmButton from "@/components/BmButton";
-import { AtMessage } from 'taro-ui'
+import { AtMessage } from "taro-ui";
 
 import styles from "./index.module.scss";
 import { useGlobalStore } from "@/zustand/index";
@@ -24,21 +23,31 @@ export default function Index() {
   });
 
   useEffect(() => {
-    if(userInfo) {
+    if (userInfo) {
       setAvatarUrl(userInfo.headPic);
       setNickName(userInfo.username);
     }
-  }, [userInfo])
+  }, [userInfo]);
 
-  const onChooseAvatar = (e: any) => {
+  const onChooseAvatar = async (e: any) => {
     const { avatarUrl } = e.detail;
-    setAvatarUrl(avatarUrl);
+
+    try {
+      let res = await postUploadFile({
+        filePath: avatarUrl,
+      });
+      if (res.code === 0) {
+        setAvatarUrl(res.data.url);
+      }
+      console.log("上传头像成功", res);
+    } catch (error) {
+      console.error("上传头像失败", error);
+    }
   };
 
   const handleEnter = async (type: "enterRoom" | "createRoom") => {
     if (validate()) return;
     try {
-      console.log("userInfo", userInfo);
       let res = await postUpdateUserInfo({
         id: Number(userInfo?.id),
         avatarUrl,
@@ -113,6 +122,9 @@ export default function Index() {
       >
         上传头像
       </BmButton>
+      <View className="tip-wrapper">
+        我们收集您的头像信息，仅用于房间内展示，方便其它用户识别您。
+      </View>
       <Input
         className={styles["nickname-input"]}
         type="nickname"
@@ -120,6 +132,9 @@ export default function Index() {
         value={nickName}
         onInput={(e) => setNickName(e.detail.value)}
       />
+      <View className="tip-wrapper">
+        我们收集您的昵称信息，仅用于房间内展示，方便其它用户识别您。
+      </View>
 
       <BmButton
         className={classNames(["width-80", styles["start-btn"]])}
