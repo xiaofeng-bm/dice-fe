@@ -1,5 +1,15 @@
 @import "@/styles/variable.scss";
 
+page {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background-color: $color-black;
+  --nutui-color-primary: green;
+  --nutui-color-primary-stop1: green;
+  --nutui-color-primary-stop2: green;
+}
 .container {
   width: 100%;
   height: 100%;

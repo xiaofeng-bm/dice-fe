@@ -7,12 +7,16 @@ import classNames from "classnames";
 
 import BmButton from "@/components/BmButton";
 import { AtMessage } from "taro-ui";
+import { Button, ConfigProvider } from "@nutui/nutui-react-taro";
+import BmSpin from "@/components/BmSpin";
 
 import styles from "./index.module.scss";
 import { useGlobalStore } from "@/zustand/index";
 
 export default function Index() {
   const { params } = useRouter();
+
+  const [saveLoading, setSaveLoading] = useState<any>(null);
   const [avatarUrl, setAvatarUrl] = useState<string>("");
   const [nickName, setNickName] = useState("");
 
@@ -47,6 +51,7 @@ export default function Index() {
 
   const handleEnter = async (type: "enterRoom" | "createRoom") => {
     if (validate()) return;
+    setSaveLoading(type);
     try {
       let res = await postUpdateUserInfo({
         id: Number(userInfo?.id),
@@ -70,6 +75,7 @@ export default function Index() {
         }
       }
     } catch (error) {}
+    setSaveLoading(null);
   };
 
   const validate = () => {
@@ -92,6 +98,9 @@ export default function Index() {
 
   return (
     <View className={styles.container}>
+
+      <Button type="primary">aaa</Button>
+    
       <AtMessage />
       <View className={styles["dice-bg"]}>
         <View className={styles["dice"]}>🎲</View>
@@ -99,7 +108,6 @@ export default function Index() {
         <View className={styles["dice"]}>🎲</View>
         <View className={styles["dice"]}>🎲</View>
       </View>
-
       <View className={styles["contene-area"]}>
         <View className={styles["logo-container"]}>
           <View className={styles["logo"]}>
@@ -122,6 +130,9 @@ export default function Index() {
       >
         上传头像
       </BmButton>
+
+
+
       <View className="tip-wrapper">
         我们收集您的头像信息，仅用于房间内展示，方便其它用户识别您。
       </View>
@@ -136,22 +147,26 @@ export default function Index() {
         我们收集您的昵称信息，仅用于房间内展示，方便其它用户识别您。
       </View>
 
-      <BmButton
-        className={classNames(["width-80", styles["start-btn"]])}
-        type="success"
-        // disabled={params?.roomId === "undefined"}
-        onClick={() => handleEnter("enterRoom")}
-      >
-        进入房间
-      </BmButton>
+      <BmSpin spinning={saveLoading === "enterRoom"}>
+        <BmButton
+          className={classNames(["width-80", styles["start-btn"]])}
+          type="success"
+          // disabled={params?.roomId === "undefined"}
+          onClick={() => handleEnter("enterRoom")}
+        >
+          进入房间
+        </BmButton>
+      </BmSpin>
 
-      <BmButton
-        className={classNames(["width-80"])}
-        type="primary"
-        onClick={() => handleEnter("createRoom")}
-      >
-        创建房间
-      </BmButton>
+      <BmSpin spinning={saveLoading === "createRoom"} className="margin-top-20">
+        <BmButton
+          className={classNames(["width-80"])}
+          type="primary"
+          onClick={() => handleEnter("createRoom")}
+        >
+          创建房间
+        </BmButton>
+      </BmSpin>
     </View>
   );
 }

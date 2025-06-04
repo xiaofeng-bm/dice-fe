@@ -3,6 +3,14 @@
 @import "taro-ui/dist/style/components/input-number.scss";
 @import 'taro-ui/dist/style/components/message.scss';
 
+:root {
+  --nutui-brand-color: green;
+  --nutui-primary-color: green;
+  --nutui-primary-color-end: green;
+  --nutui-button-primary-background: green;
+  --nutui-button-primary-border-color: green;
+}
+
 page {
   width: 100%;
   height: 100%;
@@ -16,7 +24,7 @@ body {
   width: 100%;
   height: 100%;
 
-  background-color: $color-black;
+  background-color: #000;
 }
 
 .margin-top-20 {
@@ -24,7 +32,7 @@ body {
 }
 
 .width-80 {
-  width: 80%;
+  width: 80vw;
 }
 
 .input-default {
@@ -60,7 +68,6 @@ body {
     justify-content: center;
   }
 }
-
 
 .tip-wrapper {
   font-size: 16px;

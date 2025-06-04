@@ -2,6 +2,7 @@ import { postEnterRoom } from "@/services/game";
 import { View, Image, Input } from "@tarojs/components";
 import { navigateBack, showToast, navigateTo, useRouter } from "@tarojs/taro";
 import { useGlobalStore } from "@/zustand";
+import { Button } from '@nutui/nutui-react-taro'
 
 import { useEffect, useState } from "react";
 import BmButton from "@/components/BmButton";
@@ -11,6 +12,8 @@ import { AtMessage } from "taro-ui";
 import classNames from "classnames";
 import styles from "./index.module.scss";
 import { getHotRooms } from "@/services/room";
+
+import "@/assets/iconfont/iconfont.css";
 
 const EnterRoom = () => {
   const { userInfo } = useGlobalStore();
@@ -24,7 +27,7 @@ const EnterRoom = () => {
     if (params.roomId && params.roomId !== "undefined") {
       setRoomId(params.roomId as string);
     }
-    init();
+    // init();
   }, []);
 
   const init = () => {
@@ -82,7 +85,7 @@ const EnterRoom = () => {
   return (
     <View className={styles["enter-container"]}>
       <AtMessage />
-
+      <Button type="primary">ssss</Button>
       <View className={styles["nav-container"]}>
         <View className={styles["back"]} onClick={goBack}>
           返回
@@ -105,19 +108,35 @@ const EnterRoom = () => {
               value={roomId}
               onInput={(e) => setRoomId(e.detail.value)}
             />
-            <BmButton
-              type="primary"
-              className={styles["enter-btn"]}
-              onClick={handleEnter}
-            >
-              进入
-            </BmButton>
+            <BmSpin spinning={true} className={styles["enter-btn"]}>
+              <BmButton
+                type="primary"
+                
+                onClick={handleEnter}
+              >
+                进入
+              </BmButton>
+            </BmSpin>
           </View>
         </View>
       </View>
 
       <View className={styles["hot-rooms"]}>
-        <View className={styles[""]}></View>
+        <View className={styles["label-container"]}>
+          <View className={styles["label-text"]}>热门房间</View>
+          <View
+            className={styles["refresh-container"]}
+            onClick={getHotRoomList}
+          >
+            <View
+              className={classNames(
+                ["iconfont", "icon-shuaxin"],
+                styles["icon"]
+              )}
+            ></View>
+            <View className={styles["refresh-text"]}>刷新</View>
+          </View>
+        </View>
       </View>
     </View>
   );

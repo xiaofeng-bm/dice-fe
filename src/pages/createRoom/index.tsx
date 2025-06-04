@@ -1,11 +1,11 @@
 import { postCreateRoom } from "@/services/user";
-import { View, Input, Button } from "@tarojs/components";
-import { useEffect, useState } from "react";
-import { navigateTo } from "@tarojs/taro";
+import { View, Input, Image } from "@tarojs/components";
+import { useState } from "react";
+import { navigateTo, navigateBack } from "@tarojs/taro";
 import { AtInputNumber } from "taro-ui";
 
 import BmButton from "@/components/BmButton";
-import { AtMessage } from 'taro-ui'
+import { AtMessage } from "taro-ui";
 
 import styles from "./index.module.scss";
 import classNames from "classnames";
@@ -36,9 +36,27 @@ const CreateRoom = () => {
     }
   };
 
+    const goBack = () => {
+    navigateBack({
+      delta: 1,
+    });
+  };
+
   return (
     <View className={styles["create-room-container"]}>
       <AtMessage />
+      <View className={styles["nav-container"]}>
+        <View className={styles["back"]} onClick={goBack}>
+          返回
+        </View>
+        <View className={styles["user-container"]}>
+          <View className={styles["name"]}>{userInfo?.username}</View>
+          <View className={styles["user-avatar"]}>
+            <Image src={userInfo?.headPic} className={styles["avatar"]} />
+          </View>
+        </View>
+      </View>
+
       <View className={styles["room-info"]}>
         <View className={styles["room-name"]}>
           <View className={styles["label-text"]}>房间名称</View>
@@ -77,6 +95,7 @@ const CreateRoom = () => {
           <AtInputNumber
             type="number"
             max={6}
+            min={2}
             value={playerLimit}
             onChange={(value) => setPlayerLimit(value)}
           />
