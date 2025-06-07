@@ -1,0 +1,248 @@
+@import "@/styles/variable.scss";
+
+.enter-container {
+  width: 100%;
+  height: 100%;
+
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+
+  background: radial-gradient(
+    circle,
+    rgba(140, 82, 255, 0.2) 0%,
+    rgba(140, 82, 255, 0) 70%
+  );
+
+  --nutui-hoverbutton-position-bottom: 100px;
+  --nutui-hoverbutton-position-right: 50px;
+
+  .add-hover {
+    width: 90px;
+    height: 90px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+    border-radius: 50%;
+    background-color: var(--color-purple);
+
+    .add-text {
+      font-size: 20px;
+      color: rgba(255, 255, 255, 0.7);
+      text-shadow: 0 0 5px #8c8c8c, 0 0 10px #8c8c8c, 0 0 20px #8c8c8c,
+        0 0 40px #8c8c8c;
+    }
+  }
+  .nav-container {
+    width: 100%;
+    color: $color-gray;
+    padding-left: 20px;
+    height: 100px;
+    line-height: 100px;
+
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    background-color: rgba(20, 20, 20, 0.8);
+    backdrop-filter: blur(10px);
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    .user-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 20px;
+
+      .user-avatar {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+
+        cursor: pointer;
+        transition: all 0.3s ease;
+        color: rgba(255, 255, 255, 0.8);
+        margin-left: 12px;
+
+        .avatar {
+          width: 100%;
+          height: 100%;
+          border-radius: 50%;
+        }
+      }
+
+      .name {
+        color: $color-white;
+        margin-left: 10px;
+        font-size: 30px;
+        font-weight: bold;
+      }
+    }
+  }
+
+  .enter-content,
+  .hot-rooms {
+    width: 90%;
+
+    margin: 20px 0 30px 0;
+    padding: 20px 20px;
+
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 15px;
+
+    .join-room {
+      .label-text {
+        font-size: 25px;
+        margin: 20px 0;
+        color: rgba(255, 255, 255, 0.7);
+      }
+
+      .options-container {
+        display: flex;
+        width: 100%;
+
+        .input {
+          flex: 2;
+          height: 68px !important;
+          line-height: 68px !important;
+
+          background-color: rgba(255, 255, 255, 0.1) !important;
+          border-radius: 6px !important;
+
+          padding: 0 16px;
+          outline: none;
+          transition: all 0.3s ease;
+          --nutui-color-title: var(--color-white);
+        }
+        .enter-btn {
+          flex: 1;
+          width: 140px;
+          --nutui-button-default-height: 68px;
+        }
+      }
+    }
+  }
+
+  .hot-rooms {
+    max-height: calc(100vh - 300px);
+    overflow: auto;
+
+    .label-container {
+      margin-bottom: 40px;
+
+      display: flex;
+      justify-content: space-between;
+
+      .label-text {
+        font-size: 25px;
+        margin: 20px 0;
+        color: rgba(255, 255, 255, 0.7);
+        text-shadow: 0 0 5px #8c52ff, 0 0 10px #8c52ff, 0 0 20px #8c52ff,
+          0 0 40px #8c52ff;
+      }
+
+      .refresh-container {
+        color: $color-purple;
+        font-size: 25px;
+        display: flex;
+        align-items: center;
+        margin: 10px 0;
+        padding: 10px;
+
+        .icon {
+          vertical-align: bottom;
+        }
+        .refresh-text {
+          vertical-align: bottom;
+        }
+      }
+    }
+
+    .room-container {
+      margin-top: 20px;
+      background-color: rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      padding: 20px 30px;
+      --nutui-space-gap: 20px;
+      color: var(--color-white);
+
+      .room-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        .room-name {
+          font-size: 27px;
+          font-weight: bold;
+        }
+
+        .room-status {
+          background-color: rgba(140, 82, 255, 0.2);
+          color: #8c52ff;
+          padding: 8px 20px;
+          border-radius: 20px;
+          font-size: 22px;
+          font-weight: bold;
+        }
+      }
+
+      .room-info {
+        display: flex;
+        justify-content: space-between;
+
+        .info-item {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          color: rgba(255, 255, 255, 0.6);
+          font-size: 20px;
+
+          .num {
+            font-size: 20px;
+          }
+        }
+      }
+
+      .room-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        .host-info {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+
+          .host-avatar {
+            border-radius: 50%;
+            background-color: rgba(140, 82, 255, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            font-weight: bold;
+          }
+
+          .host-name {
+            font-size: 24px;
+            color: rgba(255, 255, 255, 0.7);
+          }
+        }
+
+        .join-info {
+          font-size: 24px;
+          color: #8c52ff;
+          font-weight: bold;
+          display: flex;
+          align-items: center;
+        }
+      }
+    }
+
+    .room-container + .room-container {
+      margin-top: 20px;
+    }
+  }
+}

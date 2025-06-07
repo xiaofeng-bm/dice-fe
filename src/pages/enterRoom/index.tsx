@@ -2,12 +2,9 @@ import { postEnterRoom } from "@/services/game";
 import { View, Image, Input } from "@tarojs/components";
 import { navigateBack, showToast, navigateTo, useRouter } from "@tarojs/taro";
 import { useGlobalStore } from "@/zustand";
-import { Button } from '@nutui/nutui-react-taro'
 
 import { useEffect, useState } from "react";
 import BmButton from "@/components/BmButton";
-import BmSpin from "@/components/BmSpin";
-import { AtMessage } from "taro-ui";
 
 import classNames from "classnames";
 import styles from "./index.module.scss";
@@ -84,8 +81,7 @@ const EnterRoom = () => {
   };
   return (
     <View className={styles["enter-container"]}>
-      <AtMessage />
-      <Button type="primary">ssss</Button>
+    
       <View className={styles["nav-container"]}>
         <View className={styles["back"]} onClick={goBack}>
           返回
@@ -108,15 +104,10 @@ const EnterRoom = () => {
               value={roomId}
               onInput={(e) => setRoomId(e.detail.value)}
             />
-            <BmSpin spinning={true} className={styles["enter-btn"]}>
-              <BmButton
-                type="primary"
-                
-                onClick={handleEnter}
-              >
-                进入
-              </BmButton>
-            </BmSpin>
+
+            <BmButton type="primary" onClick={handleEnter}>
+              进入
+            </BmButton>
           </View>
         </View>
       </View>

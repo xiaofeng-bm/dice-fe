@@ -1,22 +1,18 @@
 @import "@/styles/variable.scss";
-@import "taro-ui/dist/style/components/nav-bar.scss";
-@import "taro-ui/dist/style/components/input-number.scss";
-@import 'taro-ui/dist/style/components/message.scss';
-
-:root {
-  --nutui-brand-color: green;
-  --nutui-primary-color: green;
-  --nutui-primary-color-end: green;
-  --nutui-button-primary-background: green;
-  --nutui-button-primary-border-color: green;
-}
+@import "@/styles/theme.scss";
 
 page {
   width: 100%;
   height: 100%;
+
   margin: 0;
   padding: 0;
-  background-color: $color-black;
+
+  background: radial-gradient(
+    circle,
+    rgba(140, 82, 255, 0.2) 0%,
+    rgba(140, 82, 255, 0) 70%
+  );
 }
 
 html,
@@ -32,44 +28,33 @@ body {
 }
 
 .width-80 {
-  width: 80vw;
-}
-
-.input-default {
-  height: 68px;
-  background-color: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 12px;
-  color: white;
-  font-size: 25px;
-  padding: 0 16px;
-  outline: none;
-  transition: all 0.3s ease;
-}
-
-// 修改taro-ui input-number的样式
-.at-input-number {
-  width: 100%;
-  background-color: rgba(255, 255, 255, 0.1) !important;
-  border: 1px solid rgba(255, 255, 255, 0.2) !important;
-  height: 68px;
-
-  display: flex;
-
-  .at-input-number__btn {
-    flex-basis: 50px;
-    color: #fff;
-  }
-
-  .at-input-number__input {
-    flex: 1;
-    color: #fff;
-    display: flex;
-    justify-content: center;
-  }
+  width: 80vw !important;
 }
 
 .tip-wrapper {
   font-size: 16px;
   color: $color-gray;
 }
+
+.nut-tabbar-item {
+  padding: 20px 0 2px !important;
+}
+.nut-tabbar-item .nut-tabbar-item-text {
+  color: var(--color-white);
+}
+
+.global-loading {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  font-size: 50px;
+  background-color: rgba(255, 255, 255, 0.5);
+  display: flex;
+  z-index: 9999;
+  --nutui-loading-icon-size: 50px;
+  --nutui-loading-icon-color: var(--color-purple);
+}
+
+

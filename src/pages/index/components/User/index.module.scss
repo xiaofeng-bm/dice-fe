@@ -1,0 +1,91 @@
+.user-container {
+  --nutui-space-gap: 20px;
+  /* 内容区 */
+  .content-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    color: var(--color-white);
+
+    /* Logo */
+    .logo-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+
+      .logo {
+        width: 150px; /* 调小尺寸 */
+        height: 150px;
+        margin-bottom: 50px;
+        position: relative;
+      }
+
+      .logo-inner {
+        width: 100%;
+        height: 100%;
+        background-color: rgba(255, 255, 255, 0.9);
+        border-radius: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 100px; /* 调小字体 */
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 0 5px #8c52ff, 0 0 15px #8c52ff;
+      }
+      .logo-glow {
+        position: absolute;
+        top: -35px;
+        left: -35px;
+        right: -35px;
+        bottom: -35px;
+        background: conic-gradient(#ff2e93, #8c52ff, #00e9ff, #00ff85, #ff2e93);
+        animation: spin 4s linear infinite;
+        z-index: -1;
+        opacity: 0.7;
+        border-radius: 50%;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      .app-name {
+        font-size: 38px;
+        font-weight: bold;
+        margin-bottom: 5px;
+        color: rgba(255, 255, 255, 0.7);
+      }
+
+      .slogan {
+        font-size: 36px;
+        color: rgba(255, 255, 255, 0.7);
+        margin-bottom: 20px;
+      }
+    }
+
+    .start-btn {
+      margin-top: 100px;
+    }
+  }
+
+  .nickname-input {
+    height: 68px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+
+    padding: 0 16px;
+    outline: none;
+    transition: all 0.3s ease;
+    --nutui-color-title: var(--color-white);
+  }
+}

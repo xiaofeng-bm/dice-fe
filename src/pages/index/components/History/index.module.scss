@@ -1,0 +1,11 @@
+
+.history-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  .tip-empty {
+    font-size: 30px;
+    color: var(--color-white);
+  }
+}

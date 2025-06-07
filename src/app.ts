@@ -1,17 +1,14 @@
 import { PropsWithChildren } from "react";
-import { useLaunch, login, useRouter, redirectTo } from "@tarojs/taro";
+import { useLaunch, login } from "@tarojs/taro";
 import { postLogin } from "@/services/user";
 import { useGlobalStore } from "@/zustand/index";
 
 import "@nutui/nutui-react-taro/dist/style.css";
-import { ConfigProvider } from "@nutui/nutui-react-taro";
-import { customTheme } from "@/utils/theme";
 
 import "./app.scss"; // 确保在 NutUI 样式之后导入
 
 function App({ children }: PropsWithChildren<any>) {
-  const { userInfo, updateOpenid, updateUserInfo } = useGlobalStore();
-  const router = useRouter();
+  const { updateOpenid, updateUserInfo } = useGlobalStore();
 
   useLaunch(() => {
     login({
@@ -26,7 +23,7 @@ function App({ children }: PropsWithChildren<any>) {
     });
   });
 
-  return <ConfigProvider theme={customTheme}>{children}</ConfigProvider>;
+  return children;
 }
 
 export default App;
