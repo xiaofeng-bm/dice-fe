@@ -19,7 +19,6 @@
 
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     // background-color: rgba(20, 20, 20, 0.8);
-    backdrop-filter: blur(10px);
 
     display: flex;
     align-items: center;
@@ -76,9 +75,45 @@
       color: rgba(255, 255, 255, 0.7);
     }
 
+    .input-primary {
+      height: 88px;
+      background-color: rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+
+      padding: 0 16px;
+      outline: none;
+      transition: all 0.3s ease;
+      --nutui-color-title: var(--color-white);
+    }
+
+    .limit-container {
+   
+      .input-number {
+        width: 100%;
+        height: 88px;
+        line-height: 88px;
+
+        background-color: rgba(255, 255, 255, 0.1);
+
+  
+
+
+        --nutui-inputnumber-input-width: calc(100% - 120px);
+        --nutui-inputnumber-input-height: 88px;
+
+    
+        --nutui-inputnumber-input-font-size: 28px;
+        --nutui-inputnumber-button-width: 60px;
+        --nutui-inputnumber-button-height: 88px;
+        --nutui-color-text: white;
+        --nutui-inputnumber-input-background-color: rgba(255, 255, 255, 0.15);
+        --nutui-inputnumber-button-background-color: rgba(255, 255, 255, 0.1);
+      }
+    }
+
     .room-type {
       .options-container {
-        height: 68px;
+        height: 88px;
         background-color: rgba(255, 255, 255, 0.1);
         border: 1px solid rgba(255, 255, 255, 0.2);
         border-radius: 12px;
@@ -88,6 +123,8 @@
         align-items: center;
 
         font-size: 25px;
+
+        color: rgba(255, 255, 255, 0.6);
 
         .public,
         .private {
@@ -114,10 +151,11 @@
     border-radius: 15px;
     display: flex;
     justify-content: center;
+    color: var(--color-gray);
 
     .game-item {
       flex: 1;
-      height: 150px;
+      height: 200px;
       background-color: rgba(255, 255, 255, 0.1);
       border: 1px solid rgba(255, 255, 255, 0.2);
       border-radius: 15px;
@@ -137,6 +175,7 @@
 
     .game-type-selected {
       border: 1px solid $color-purple;
+      color: var(--color-white);
       background-color: rgba($color-purple, 0.2);
     }
     .game-item + .game-item {
@@ -144,3 +183,4 @@
     }
   }
 }
+

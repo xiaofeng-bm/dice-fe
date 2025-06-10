@@ -1,11 +1,10 @@
 import { postCreateRoom } from "@/services/user";
-import { View, Input, Image } from "@tarojs/components";
+
+import { Input, InputNumber, Button } from "@nutui/nutui-react-taro";
+import { View, Image } from "@tarojs/components";
+
 import { useState } from "react";
 import { navigateTo, navigateBack } from "@tarojs/taro";
-import { AtInputNumber } from "taro-ui";
-
-import BmButton from "@/components/BmButton";
-import { AtMessage } from "taro-ui";
 
 import styles from "./index.module.scss";
 import classNames from "classnames";
@@ -36,7 +35,7 @@ const CreateRoom = () => {
     }
   };
 
-    const goBack = () => {
+  const goBack = () => {
     navigateBack({
       delta: 1,
     });
@@ -44,7 +43,7 @@ const CreateRoom = () => {
 
   return (
     <View className={styles["create-room-container"]}>
-      <AtMessage />
+
       <View className={styles["nav-container"]}>
         <View className={styles["back"]} onClick={goBack}>
           返回
@@ -61,10 +60,10 @@ const CreateRoom = () => {
         <View className={styles["room-name"]}>
           <View className={styles["label-text"]}>房间名称</View>
           <Input
-            className={classNames("input-default")}
+            className={styles["input-primary"]}
             placeholder="请输入房间名称"
             value={roomName}
-            onInput={(e) => setRoomName(e.detail.value)}
+            onChange={(val) => setRoomName(val)}
           />
         </View>
 
@@ -92,12 +91,15 @@ const CreateRoom = () => {
 
         <View className={styles["limit-container"]}>
           <View className={styles["label-text"]}>玩家数量上限</View>
-          <AtInputNumber
-            type="number"
+          <InputNumber
+            className={styles["input-number"]}
             max={6}
             min={2}
             value={playerLimit}
-            onChange={(value) => setPlayerLimit(value)}
+            onChange={(params: any) => {
+              console.log("oara", params);
+              setPlayerLimit(params);
+            }}
           />
         </View>
       </View>
@@ -123,13 +125,13 @@ const CreateRoom = () => {
         </View>
       </View>
 
-      <BmButton
+      <Button
         style={{ width: "95%" }}
         type="primary"
         onClick={handleCreateRoom}
       >
         创建房间
-      </BmButton>
+      </Button>
     </View>
   );
 };
