@@ -1,6 +1,8 @@
-import { postEnterRoom, postLeaveRoom } from "@/services/game";
+import { postLeaveRoom, getRoomInfo } from "@/services/game";
 import { postLogin } from "@/services/user";
 import { View, Button, Image } from "@tarojs/components";
+import { CheckClose } from "@nutui/icons-react-taro";
+import { Dialog } from '@nutui/nutui-react-taro'
 
 import {
   useRouter,
@@ -13,13 +15,12 @@ import {
   useDidShow,
   useDidHide,
 } from "@tarojs/taro";
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useRef, useMemo } from "react";
 import classNames from "classnames";
 
 import { useGlobalStore } from "@/zustand/index";
 import BmButton from "@/components/BmButton";
 import BmDice from "@/components/BmDice";
-import { AtMessage } from "taro-ui";
 import {
   MessageData,
   MessageProps,
@@ -92,7 +93,7 @@ const GameRoom = () => {
 
   const init = async () => {
     const userData: any = await getUserInfo();
-    await handleEnterRoom(userData?.id, params.roomId!);
+    await getRoomData(params.roomId!);
     concateSocket(userData);
   };
 
@@ -104,7 +105,9 @@ const GameRoom = () => {
             updateOpenid(code);
             let res = await postLogin({ code });
             if (res.code === 0) {
-              const userData = res.data.result;
+              console.log("res", res);
+              const userData = res?.result;
+              console.log("userData", userData);
               updateUserInfo(userData);
               if (userData.username && userData.headPic) {
                 setUserInfo(userData);
@@ -124,24 +127,23 @@ const GameRoom = () => {
       }
     });
   };
-  const handleEnterRoom = async (userId: number, roomId: string) => {
-    try {
-      let res = await postEnterRoom({
-        userId: userId,
-        roomId: Number(roomId),
-      });
-      if (res.code === 0) {
-        res.data.players = res.data.players.map((item: any, index: number) => ({
-          ...item,
-          points: [],
-          isOwner: index === 0,
-          status: "wait",
-        }));
 
-        setRoomInfo(res.data);
-      }
+  const getRoomData = async (roomId: string) => {
+    try {
+      let res = await getRoomInfo({
+        roomId: roomId,
+      });
+      console.log("res", res);
+      res.data.players = res.data.players.map((item: any, index: number) => ({
+        ...item,
+        points: [],
+        isOwner: index === 0,
+        status: "wait",
+      }));
+
+      setRoomInfo(res.data);
     } catch (error) {
-      console.error("进入房间失败，请重新尝试", error);
+      console.error("获取房间信息失败，请重新尝试", error);
     }
   };
 
@@ -388,7 +390,7 @@ const GameRoom = () => {
   });
 
   const joinRoomMessage = (data: MessageData) => {
-    handleEnterRoom(data.userId, data.roomId);
+    getRoomData(data.roomId);
     showToast({
       title: `${data.username}加入了房间`,
       icon: "success",
@@ -485,9 +487,26 @@ const GameRoom = () => {
   };
   // ---------------------------------------------- message event end ------------------------------------------------
 
+  const handleKickOut = async() => {
+    Dialog.open('kick', {
+      title: '踢出玩家',
+      content: '确定要将该玩家踢出房间吗？',
+      onConfirm: async() => {
+        try {
+          
+        } catch (error) {
+          
+        }
+      },
+      onCancel: () => {
+        Dialog.close('kick')
+      }
+    })
+  }
+
   return (
     <View className={styles["room-container"]}>
-      <AtMessage />
+      <Dialog id="kick" />
       <View className={styles["dice-bg"]}>
         <View className={styles["dice"]}>🎲</View>
         <View className={styles["dice"]}>🎲</View>
@@ -495,9 +514,18 @@ const GameRoom = () => {
         <View className={styles["dice"]}>🎲</View>
       </View>
       <View className={styles["player-container"]}>
-        {roomInfo?.players.map((player: any) => {
+        {roomInfo?.players.map((player: any, index: number) => {
           return (
             <View className={styles["player-item"]} key={player.id}>
+              {index !== 0 && (
+                <CheckClose
+                  className={styles["close-icon"]}
+                  width={15}
+                  height={15}
+                  onClick={() => handleKickOut(player)}
+                />
+              )}
+
               <View className={styles["player-name"]}>{player.username}</View>
 
               <View className={styles["player-avatar"]}>

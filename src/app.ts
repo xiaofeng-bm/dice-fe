@@ -1,5 +1,5 @@
 import { PropsWithChildren } from "react";
-import { useLaunch, login } from "@tarojs/taro";
+import { useLaunch, login, navigateTo } from "@tarojs/taro";
 import { postLogin } from "@/services/user";
 import { useGlobalStore } from "@/zustand/index";
 
@@ -16,8 +16,14 @@ function App({ children }: PropsWithChildren<any>) {
         updateOpenid(code);
         let res = await postLogin({ code });
         if (res.code === 0) {
-          const userData = res.data.result;
+          const userData = res.result;
           updateUserInfo(userData);
+          if (res.errMsg) {
+            // 用户信息不完整
+            navigateTo({
+              url: `/pages/index/index?tab=2`,
+            });
+          }
         }
       },
     });

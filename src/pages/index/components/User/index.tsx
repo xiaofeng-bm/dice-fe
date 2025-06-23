@@ -22,6 +22,8 @@ const User = () => {
     }
   }, [userInfo]);
 
+  console.log("avatarUrl", avatarUrl);
+
   const onChooseAvatar = async (e: any) => {
     const { avatarUrl } = e.detail;
 
@@ -32,7 +34,6 @@ const User = () => {
       if (res.code === 0) {
         setAvatarUrl(res.data.url);
       }
-      console.log("上传头像成功", res);
     } catch (error) {
       console.error("上传头像失败", error);
     }
@@ -69,12 +70,18 @@ const User = () => {
           avatarUrl,
           nickName,
         });
+        showToast({
+          title: "更新用户信息成功",
+          icon: "success",
+        });
       }
     } catch (error) {
       console.error(error);
     }
     setSaveLoading(false);
   };
+
+
   return (
     <View className={styles["user-container"]}>
       <View className={styles["content-area"]}>

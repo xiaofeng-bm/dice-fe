@@ -1,6 +1,7 @@
 import { View } from "@tarojs/components";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "@tarojs/taro";
 
 import Lobby from "./components/Lobby";
 import History from "./components/History";
@@ -12,7 +13,15 @@ import { Clock, Home, User } from "@nutui/icons-react-taro";
 import styles from "./index.module.scss";
 
 export default function Index() {
+  const { params } = useRouter();
   const [activeTab, setActiveTab] = useState(0);
+
+  useEffect(() => {
+    if (params.tab) {
+      setActiveTab(Number(params.tab));
+      
+    }
+  }, [params]);
 
   const ContentDOM = useMemo(() => {
     let dom;

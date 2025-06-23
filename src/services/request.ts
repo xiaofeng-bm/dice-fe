@@ -9,6 +9,7 @@ export const request = ({ url, method, data, success, fail }: any) => {
       if (data.code === 0) {
         success(data);
       } else {
+        console.error("请求失败", data);
         showToast({
           title: data.data || data.msg,
           icon: "error",

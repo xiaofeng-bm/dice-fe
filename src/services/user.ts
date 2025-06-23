@@ -12,7 +12,7 @@ export const postLogin = (data: { code: string }): Promise<any> => {
       method: "POST",
       data,
       success: (data) => {
-        resolve(data);
+        resolve(data.data);
       },
       fail: (err) => {
         reject(err);

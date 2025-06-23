@@ -103,6 +103,24 @@ const Lobby = () => {
     return `${minutes}分钟前`;
   };
 
+  const handleEnterRoom = async (roomId: string) => {
+    try {
+      let res = await postEnterRoom({
+        userId: userInfo?.id,
+        roomId: roomId,
+      });
+      if (res.code === 0) {
+        showToast({
+          title: "进入房间成功",
+          icon: "success",
+        });
+        navigateTo({
+          url: `/pages/gameRoom/index?roomId=${roomId}`,
+        });
+      }
+    } catch (error) {}
+  };
+
   return (
     <View className={styles["enter-container"]}>
       {loading && <Loading className="global-loading" type="spinner" />}
@@ -200,9 +218,14 @@ const Lobby = () => {
                     height="28px"
                     radius="14px"
                   ></Image>
-                  <View className={styles["host-name"]}>李四</View>
+                  <View className={styles["host-name"]}>
+                    {room.players[0]?.username}
+                  </View>
                 </View>
-                <View className={styles["join-info"]}>
+                <View
+                  className={styles["join-info"]}
+                  onClick={() => handleEnterRoom(room.roomId)}
+                >
                   <View>点击加入</View>
                   <ArrowRight width={15} height={15} />
                 </View>
