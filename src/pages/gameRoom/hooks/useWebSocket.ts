@@ -44,7 +44,6 @@ export const useWebSocket = ({ onMessage }: WebSocketProps) => {
       // 处理心跳响应
       if (message.event === "heartbeat") {
         const now = new Date();
-        console.log(`收到心跳响应: ${now.toLocaleTimeString()}`);
         return;
       }
       onMessage(message);

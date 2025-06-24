@@ -2,7 +2,7 @@ import { postLeaveRoom, getRoomInfo } from "@/services/game";
 import { postLogin } from "@/services/user";
 import { View, Button, Image } from "@tarojs/components";
 import { CheckClose } from "@nutui/icons-react-taro";
-import { Dialog } from '@nutui/nutui-react-taro'
+import { Dialog, NavBar } from "@nutui/nutui-react-taro";
 
 import {
   useRouter,
@@ -35,12 +35,10 @@ import styles from "./index.module.scss";
 import { useWebSocket } from "./hooks/useWebSocket";
 
 const GameRoom = () => {
-  const { updateOpenid, updateUserInfo } = useGlobalStore();
+  const { updateOpenid, updateUserInfo, userInfo } = useGlobalStore();
   const [roomInfo, setRoomInfo] = useState<RoomInfo | null>(null);
 
   const [btnDisabled, setBtnDisabled] = useState(true);
-
-  const [userInfo, setUserInfo] = useState<any>(null);
 
   const dice1Ref = useRef<any>(null);
   const dice2Ref = useRef<any>(null);
@@ -57,7 +55,6 @@ const GameRoom = () => {
   });
 
   const unMount = () => {
-    console.log("unMount");
     if (gameTimerRef.current) {
       clearTimeout(gameTimerRef.current);
       gameTimerRef.current = null;
@@ -105,12 +102,9 @@ const GameRoom = () => {
             updateOpenid(code);
             let res = await postLogin({ code });
             if (res.code === 0) {
-              console.log("res", res);
               const userData = res?.result;
-              console.log("userData", userData);
               updateUserInfo(userData);
               if (userData.username && userData.headPic) {
-                setUserInfo(userData);
                 resolve(userData);
               } else {
                 navigateTo({
@@ -133,11 +127,9 @@ const GameRoom = () => {
       let res = await getRoomInfo({
         roomId: roomId,
       });
-      console.log("res", res);
       res.data.players = res.data.players.map((item: any, index: number) => ({
         ...item,
         points: [],
-        isOwner: index === 0,
         status: "wait",
       }));
 
@@ -150,8 +142,8 @@ const GameRoom = () => {
   const expandRoomInfo = useMemo(() => {
     if (roomInfo) {
       // 房主信息
-      const ownerInfo = roomInfo.players[0];
-      // 房间是否满员
+      const ownerInfo: any =
+        roomInfo.players.find((player) => player.id === roomInfo.ownerId) || {};
       const fullHoust = roomInfo.players.length >= roomInfo.playerLimit;
       // 是否全员已准备
       const allReady = roomInfo.players
@@ -166,16 +158,6 @@ const GameRoom = () => {
       const curPlayer = roomInfo.players.find(
         (item: any) => item.id === userInfo?.id
       );
-
-      // if (finished) {
-      //   const winner = roomInfo.players.reduce((prev: any, cur: any) => {
-      //     if (prev.score > cur.score) {
-      //       return prev;
-      //     }
-      //     return cur;
-      //   });
-      //   console.log("winner", winner);
-      // }
       return {
         ownerInfo,
         fullHoust,
@@ -282,7 +264,7 @@ const GameRoom = () => {
   const btnEle = () => {
     if (expandRoomInfo) {
       if (btnDisabled) {
-        if (expandRoomInfo.curPlayer?.isOwner) {
+        if (expandRoomInfo.ownerInfo?.id === expandRoomInfo.curPlayer?.id) {
           if (expandRoomInfo.finished) {
             return (
               <BmButton type="primary" onClick={handleAgain}>
@@ -301,7 +283,6 @@ const GameRoom = () => {
             );
           }
         } else {
-          console.log("expandRoomInfo.curPlayer", expandRoomInfo.curPlayer);
           if (
             expandRoomInfo.curPlayer?.status === "ready" ||
             expandRoomInfo.curPlayer?.status === "wait"
@@ -376,8 +357,10 @@ const GameRoom = () => {
       case "leaveRoom":
         leaveMessage(message.data);
         break;
+      case "kickRoom":
+        kickMessage(message.data);
+        break;
       case "gameAgain":
-        console.log("gameGgain", message.data);
         gameGgaigMessage(message.data);
         break;
       default:
@@ -391,10 +374,12 @@ const GameRoom = () => {
 
   const joinRoomMessage = (data: MessageData) => {
     getRoomData(data.roomId);
-    showToast({
-      title: `${data.username}加入了房间`,
-      icon: "success",
-    });
+    if (data.userId !== userInfo?.id) {
+      showToast({
+        title: `${data.username}加入了房间`,
+        icon: "success",
+      });
+    }
   };
   const readyMessage = (data: MessageData) => {
     setRoomInfo((prevRoomInfo: any) => {
@@ -447,29 +432,52 @@ const GameRoom = () => {
 
   const leaveMessage = async (data: MessageData) => {
     try {
-      setRoomInfo((prevRoomInfo: any) => {
-        return {
-          ...prevRoomInfo,
-          players: prevRoomInfo.players.filter(
-            (item: any) => item.id !== data.userId
-          ),
-        };
-      });
-      showToast({
-        title: `${data.username}离开了房间`,
-        icon: "success",
-      });
       let res = await postLeaveRoom({
         userId: data.userId,
         roomId: data.roomId,
       });
       if (res.code === 0) {
-        // todu
+        if (data.userId !== userInfo?.id) {
+          showToast({
+            title: `${data.username}离开了房间`,
+            icon: "success",
+          });
+        }
+        getRoomData(params.roomId!);
+      }
+    } catch (error) {}
+  };
+
+  console.log("roomInfo", roomInfo);
+  // 踢出房间
+  const kickMessage = async ({ content }: MessageData) => {
+    try {
+      setRoomInfo((prevRoomInfo: any) => {
+        return {
+          ...prevRoomInfo,
+          players: prevRoomInfo.players.filter(
+            (item: any) => item.id !== content.userId
+          ),
+        };
+      });
+      let res = await postLeaveRoom({
+        userId: content.userId,
+        roomId: content.roomId,
+      });
+      if (res.code === 0) {
+        if (content.userId === userInfo?.id) {
+          showToast({
+            title: `你已被踢出房间`,
+            icon: "none",
+          });
+          navigateTo({
+            url: `/pages/index/index`,
+          });
+        }
       }
     } catch (error) {}
   };
   const gameGgaigMessage = async (data: MessageData) => {
-    console.log("data", data);
     setRoomInfo((prevRoomInfo: any) => {
       return {
         ...prevRoomInfo,
@@ -477,7 +485,6 @@ const GameRoom = () => {
           return {
             ...item,
             points: [],
-            isOwner: index === 0,
             score: null,
             status: "wait",
           };
@@ -487,37 +494,40 @@ const GameRoom = () => {
   };
   // ---------------------------------------------- message event end ------------------------------------------------
 
-  const handleKickOut = async() => {
-    Dialog.open('kick', {
-      title: '踢出玩家',
-      content: '确定要将该玩家踢出房间吗？',
-      onConfirm: async() => {
+  const handleKickOut = async (player: any) => {
+    Dialog.open("kick", {
+      title: "踢出玩家",
+      content: "确定要将该玩家踢出房间吗？",
+      onConfirm: async () => {
         try {
-          
-        } catch (error) {
-          
-        }
+          // 发送离开房间的消息
+          const payload = {
+            event: "kickRoom",
+            data: {
+              roomId: params?.roomId,
+              userId: player?.id,
+              username: player?.username,
+            },
+          };
+          sendMessage(payload);
+          Dialog.close("kick");
+        } catch (error) {}
       },
       onCancel: () => {
-        Dialog.close('kick')
-      }
-    })
-  }
+        Dialog.close("kick");
+      },
+    });
+  };
 
   return (
     <View className={styles["room-container"]}>
+      <NavBar title={`${params.roomId}号房间`} />
       <Dialog id="kick" />
-      <View className={styles["dice-bg"]}>
-        <View className={styles["dice"]}>🎲</View>
-        <View className={styles["dice"]}>🎲</View>
-        <View className={styles["dice"]}>🎲</View>
-        <View className={styles["dice"]}>🎲</View>
-      </View>
       <View className={styles["player-container"]}>
         {roomInfo?.players.map((player: any, index: number) => {
           return (
             <View className={styles["player-item"]} key={player.id}>
-              {index !== 0 && (
+              {expandRoomInfo?.ownerInfo.id === userInfo?.id && player.id !== expandRoomInfo?.ownerInfo.id && (
                 <CheckClose
                   className={styles["close-icon"]}
                   width={15}

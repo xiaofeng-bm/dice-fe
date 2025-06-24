@@ -1,6 +1,6 @@
 import { postUpdateUserInfo, postUploadFile } from "@/services/user";
 
-import { showToast } from "@tarojs/taro";
+import { showToast, useRouter, redirectTo } from "@tarojs/taro";
 import { View, Image } from "@tarojs/components";
 import { useEffect, useState } from "react";
 import { Button, Space, Input } from "@nutui/nutui-react-taro";
@@ -13,6 +13,8 @@ const User = () => {
   const [avatarUrl, setAvatarUrl] = useState<string>("");
   const [nickName, setNickName] = useState("");
 
+  const { params } = useRouter();
+
   const [saveLoading, setSaveLoading] = useState<boolean>(false);
 
   useEffect(() => {
@@ -22,7 +24,7 @@ const User = () => {
     }
   }, [userInfo]);
 
-  console.log("avatarUrl", avatarUrl);
+
 
   const onChooseAvatar = async (e: any) => {
     const { avatarUrl } = e.detail;
@@ -74,6 +76,15 @@ const User = () => {
           title: "更新用户信息成功",
           icon: "success",
         });
+
+        if(params.from === 'share') {
+          // 如果是从分享链接进入的，跳转到游戏房间
+          setTimeout(() => {
+            redirectTo({
+              url: `/pages/gameRoom/index?roomId=${params.roomId}`,
+            });
+          }, 1000);
+        }
       }
     } catch (error) {
       console.error(error);

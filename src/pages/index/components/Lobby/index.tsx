@@ -1,6 +1,6 @@
 import { postEnterRoom } from "@/services/game";
 import { View } from "@tarojs/components";
-import { navigateBack, showToast, navigateTo, useRouter } from "@tarojs/taro";
+import { showToast, navigateTo, useRouter } from "@tarojs/taro";
 import { useGlobalStore } from "@/zustand";
 
 import { useEffect, useState } from "react";
@@ -180,6 +180,10 @@ const Lobby = () => {
         </View>
 
         {hotRooms.map((room: any) => {
+          console.log('room', room)
+          const ownerUser = room.players.find(
+            (player) => player.id === room.ownerId
+          );
           return (
             <Space className={styles["room-container"]} direction="vertical">
               <View className={styles["room-header"]}>
@@ -212,14 +216,14 @@ const Lobby = () => {
                 <View className={styles["host-info"]}>
                   <Image
                     className={styles["host-avatar"]}
-                    src={room.players[0]?.headPic}
+                    src={ownerUser?.headPic}
                     mode="scaleToFill"
                     width="28px"
                     height="28px"
                     radius="14px"
                   ></Image>
                   <View className={styles["host-name"]}>
-                    {room.players[0]?.username}
+                    {ownerUser?.username}
                   </View>
                 </View>
                 <View
