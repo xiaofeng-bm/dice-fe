@@ -8,19 +8,17 @@ export default defineConfig<"vite">(async (merge, { command, mode }) => {
   const baseConfig: UserConfigExport<"vite"> = {
     projectName: "dice-fe",
     date: "2025-5-9",
-    designWidth: 750,
+    designWidth: 375, // 修改为 375
     deviceRatio: {
-      640: 2.34 / 2,
-      750: 1,
-      375: 2,
-      828: 1.81 / 2,
+      640: 2.34 / 4, // 调整比例
+      750: 0.5, // 调整比例
+      375: 1, // 这是基准，所以为 1
+      828: 1.81 / 4, // 调整比例
     },
     // 全局rem适配，默认开启
     designWidthCustom: (input) => {
-      if (input?.file?.replace(/\\+/g, "/").indexOf("@nutui/nutui-taro") > -1) {
-        return 375;
-      }
-      return 750;
+      // 所有文件都使用 375 作为设计稿宽度
+      return 375;
     },
     sourceRoot: "src",
     outputRoot: "dist",

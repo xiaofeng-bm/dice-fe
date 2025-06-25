@@ -83,3 +83,19 @@ export const postRemovePlayer = (data: any): Promise<any> => {
   });
 };
 
+
+export const getGameHistory = (data: any): Promise<any> => {
+  return new Promise((resolve, reject) => {
+    request({
+      url: baseUrl + "/game/game-history",
+      method: "GET",
+      data,
+      success: (data) => {
+        resolve(data);
+      },
+      fail: (err) => {
+        reject(err);
+      },
+    });
+  });
+};

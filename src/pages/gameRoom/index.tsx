@@ -2,7 +2,7 @@ import { postLeaveRoom, getRoomInfo } from "@/services/game";
 import { postLogin } from "@/services/user";
 import { View, Button, Image } from "@tarojs/components";
 import { CheckClose } from "@nutui/icons-react-taro";
-import { Dialog, NavBar } from "@nutui/nutui-react-taro";
+import { Dialog } from "@nutui/nutui-react-taro";
 
 import {
   useRouter,
@@ -21,6 +21,7 @@ import classNames from "classnames";
 import { useGlobalStore } from "@/zustand/index";
 import BmButton from "@/components/BmButton";
 import BmDice from "@/components/BmDice";
+import History from "./components/History";
 import {
   MessageData,
   MessageProps,
@@ -42,6 +43,8 @@ const GameRoom = () => {
 
   const dice1Ref = useRef<any>(null);
   const dice2Ref = useRef<any>(null);
+
+  const [showHistory, setShowHistory] = useState(false);
 
   const { params } = useRouter();
 
@@ -127,7 +130,7 @@ const GameRoom = () => {
       let res = await getRoomInfo({
         roomId: roomId,
       });
-      res.data.players = res.data.players.map((item: any, index: number) => ({
+      res.data.players = res.data.players.map((item: any) => ({
         ...item,
         points: [],
         status: "wait",
@@ -519,22 +522,37 @@ const GameRoom = () => {
     });
   };
 
+  const goBack = () => {
+    // todu
+  };
+
   return (
     <View className={styles["room-container"]}>
-      <NavBar title={`${params.roomId}号房间`} />
       <Dialog id="kick" />
+      <View className={styles["nav-container"]}>
+        <View className={styles["back"]} onClick={goBack}>
+          返回
+        </View>
+        <View
+          className={styles["user-container"]}
+          onClick={() => setShowHistory(true)}
+        >
+          <View className={styles["name"]}>查看记录</View>
+        </View>
+      </View>
       <View className={styles["player-container"]}>
         {roomInfo?.players.map((player: any, index: number) => {
           return (
             <View className={styles["player-item"]} key={player.id}>
-              {expandRoomInfo?.ownerInfo.id === userInfo?.id && player.id !== expandRoomInfo?.ownerInfo.id && (
-                <CheckClose
-                  className={styles["close-icon"]}
-                  width={15}
-                  height={15}
-                  onClick={() => handleKickOut(player)}
-                />
-              )}
+              {expandRoomInfo?.ownerInfo.id === userInfo?.id &&
+                player.id !== expandRoomInfo?.ownerInfo.id && (
+                  <CheckClose
+                    className={styles["close-icon"]}
+                    width={15}
+                    height={15}
+                    onClick={() => handleKickOut(player)}
+                  />
+                )}
 
               <View className={styles["player-name"]}>{player.username}</View>
 
@@ -589,6 +607,17 @@ const GameRoom = () => {
         </View>
         {btnEle()}
       </View>
+
+      {showHistory && (
+        <History
+          roomId={roomInfo?.roomId!}
+          userId={userInfo?.id}
+          visible={showHistory}
+          onClose={() => {
+            setShowHistory(false);
+          }}
+        />
+      )}
     </View>
   );
 };

@@ -70,6 +70,7 @@ export const useWebSocket = ({ onMessage }: WebSocketProps) => {
   };
 
   const enter = () => {
+    
     const payload = {
       event: "joinRoom",
       data: {
