@@ -130,7 +130,6 @@ const Lobby = () => {
           <View
             className={styles["add-hover"]}
             onClick={() => {
-              console.log("点击新建房间");
               navigateTo({
                 url: `/pages/createRoom/index`,
               });
