@@ -111,7 +111,7 @@ const GameRoom = () => {
                 resolve(userData);
               } else {
                 navigateTo({
-                  url: `/pages/index/index?roomId=${params?.roomId}&from=gameRoom`,
+                  url: `/pages/index/index?roomId=${params?.roomId}&from=gameRoom&tab=2`,
                 });
               }
             } else {
