@@ -14,6 +14,7 @@ import {
   useUnload,
   useDidShow,
   useDidHide,
+  navigateBack
 } from "@tarojs/taro";
 import { useState, useRef, useMemo } from "react";
 import classNames from "classnames";
@@ -57,6 +58,7 @@ const GameRoom = () => {
     };
   });
 
+  
   const unMount = () => {
     if (gameTimerRef.current) {
       clearTimeout(gameTimerRef.current);
@@ -89,7 +91,7 @@ const GameRoom = () => {
   });
 
   useUnload(unMount);
-  useDidHide(unMount);
+  // useDidHide(unMount);
 
   const init = async () => {
     const userData: any = await getUserInfo();
@@ -523,7 +525,9 @@ const GameRoom = () => {
   };
 
   const goBack = () => {
-    // todu
+    navigateBack({
+      delta: 1,
+    });
   };
 
   return (
