@@ -77,7 +77,7 @@ const User = () => {
           icon: "success",
         });
 
-        if(params.from === 'share') {
+        if(params.from === 'gameRoom') {
           // 如果是从分享链接进入的，跳转到游戏房间
           setTimeout(() => {
             redirectTo({
